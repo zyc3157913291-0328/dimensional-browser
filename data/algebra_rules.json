@@ -1,0 +1,97 @@
+{
+  "kind": "algebra_rules",
+  "note": "代数规则表 —— 一等核心组件（设计文档 2.3）。每条规则声明运算如何改变量纲。求值器只允许执行此表声明的运算；selfcheck 会校验每个 op 都有对应实现。",
+  "rules": [
+    {
+      "op": "mul",
+      "zh": "乘法",
+      "transform": "add_operands",
+      "structure": "any",
+      "explain": "量纲相乘：各因子量纲（幂次）相加"
+    },
+    {
+      "op": "div",
+      "zh": "除法",
+      "transform": "sub_operands",
+      "structure": "any",
+      "explain": "量纲相除：被除数量纲减去除数量纲"
+    },
+    {
+      "op": "pow",
+      "zh": "幂运算",
+      "transform": "scale_by_exp",
+      "structure": "any",
+      "explain": "量纲取幂：所有幂次乘以指数。指数必须是无量纲数"
+    },
+    {
+      "op": "neg",
+      "zh": "取负",
+      "transform": "identity",
+      "structure": "any",
+      "explain": "取负号只是数值操作，不改变量纲"
+    },
+    {
+      "op": "add",
+      "zh": "加法",
+      "transform": "require_equal",
+      "structure": "any",
+      "explain": "量纲相加规则：只有量纲相同的量才能相加减。否则公式不齐次"
+    },
+    {
+      "op": "derivative",
+      "zh": "求导",
+      "transform": "sub_by_var_order",
+      "structure": "any",
+      "explain": "对变量求导：量纲减去该变量量纲的 order 倍。依据差商极限定义"
+    },
+    {
+      "op": "integral",
+      "zh": "积分",
+      "transform": "add_by_var_order",
+      "structure": "any",
+      "explain": "对变量积分：量纲加上该变量量纲的 order 倍。依据积分是和式的极限，量纲线性"
+    },
+    {
+      "op": "gradient",
+      "zh": "梯度",
+      "transform": "sub_by_var",
+      "structure": "any",
+      "explain": "梯度运算：量纲降低一阶坐标量纲。与一阶求导同规则"
+    },
+    {
+      "op": "divergence",
+      "zh": "散度",
+      "transform": "sub_by_var",
+      "structure": "vector",
+      "explain": "散度是各分量偏导之和：量纲降低一阶坐标量纲"
+    },
+    {
+      "op": "curl",
+      "zh": "旋度",
+      "transform": "sub_by_var",
+      "structure": "vector",
+      "explain": "旋度是分量偏导之差：量纲降低一阶坐标量纲"
+    },
+    {
+      "op": "trace",
+      "zh": "迹",
+      "transform": "identity",
+      "structure": "matrix",
+      "explain": "迹是对角元之和，量纲不变"
+    },
+    {
+      "op": "det",
+      "zh": "行列式",
+      "transform": "scale_by_size",
+      "structure": "matrix",
+      "explain": "行列式是 n 重乘积，量纲乘以矩阵阶数 n。最易错的一条：2×2 矩阵每项 [L] 时 det 得 [L]²"
+    },
+    {
+      "op": "matmul",
+      "zh": "矩阵乘法",
+      "transform": "add_operands",
+      "structure": "matrix",
+      "explain": "矩阵乘法逐项乘积求和：量纲相加"
+    }
+  ]
+}

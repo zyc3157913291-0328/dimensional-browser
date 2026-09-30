@@ -1,0 +1,2186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>量纲关系浏览器</title>
+<!-- 内联 favicon：避免额外请求与 404，同时不引入外部文件 -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23faf8f4'/%3E%3Ctext x='16' y='23' font-size='19' text-anchor='middle' font-family='Georgia,serif' fill='%231c1a17'%3E%5BM%5D%3C/text%3E%3C/svg%3E">
+<style>
+  /* 配色：暖白底 + 墨黑字，接近纸面，适合长时间阅读推导。
+     语义色只用于区分边的类型，不做装饰。 */
+  :root {
+    --bg:        #faf8f4;
+    --surface:   #ffffff;
+    --ink:       #1c1a17;
+    --ink-soft:  #5c574f;
+    --ink-faint: #8d867c;
+    --line:      #e2ddd4;
+    --line-soft: #efebe4;
+    --eq:        #2f6f4f;   /* 等价重写：绿 */
+    --deriv:     #8a5a1a;   /* 求导：赭 */
+    --integ:     #1f5f7a;   /* 积分：青 */
+    --matrix:    #6a3d7a;   /* 矩阵：紫 */
+    --warn:      #a83b2a;   /* 同量纲异构警示：砖红 */
+    --search:    #b8860b;   /* 算法枚举：暗金 */
+    --mono: "Cascadia Mono", "Consolas", "SF Mono", "Menlo", monospace;
+    --serif: "Cambria Math", "Latin Modern Math", "Georgia", "Songti SC", serif;
+    --sans: "Segoe UI", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: var(--sans); font-size: 15px; line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- 顶栏 ---------- */
+  header {
+    position: sticky; top: 0; z-index: 20;
+    background: rgba(250,248,244,.94); backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+    padding: 14px 26px 12px;
+  }
+  .brand { display:flex; align-items:baseline; gap:12px; margin-bottom:11px; }
+  .brand h1 { font-size: 17px; margin:0; letter-spacing:.3px; font-weight:600; }
+  .brand .sub { font-size:12.5px; color:var(--ink-faint); }
+  .searchrow { display:flex; gap:10px; align-items:center; }
+  /* 搜索框 + 联想面板是一个整体：面板要贴着输入框下沿展开，
+     所以两者必须共用一个 position:relative 的容器。 */
+  .searchbox { position:relative; flex:1; max-width:560px; }
+  #q {
+    width:100%; padding:9px 13px; font-size:15px;
+    font-family:var(--sans); color:var(--ink);
+    background:var(--surface); border:1px solid var(--line); border-radius:7px;
+    outline:none; transition:border-color .15s, box-shadow .15s;
+  }
+  #q:focus { border-color:#c9a961; box-shadow:0 0 0 3px rgba(201,169,97,.14); }
+  #q::placeholder { color:var(--ink-faint); }
+
+  /* ---------- 联想面板（候选 + 历史） ----------
+     用户要求：候选要在**输入的同时**出现；历史只在搜索时弹出，
+     不再常驻页面下方。两者共用同一个面板，因为它们是同一个心智：
+     「我想查的东西」。 */
+  .acpanel {
+    position:absolute; left:0; right:0; top:calc(100% + 6px); z-index:40;
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:9px; box-shadow:0 10px 30px rgba(28,26,23,.13);
+    max-height:min(64vh, 460px); overflow-y:auto; padding:5px 0;
+  }
+  .acpanel .acgroup {
+    font-size:11.5px; color:var(--ink-faint); letter-spacing:.4px;
+    padding:6px 12px 4px; display:flex; align-items:center; gap:8px;
+  }
+  .acpanel .acgroup .clr {
+    margin-left:auto; font-size:11.5px; color:var(--ink-faint);
+    background:none; border:none; cursor:pointer; padding:1px 4px;
+    text-decoration:underline; text-underline-offset:2px;
+    font-family:var(--sans);
+  }
+  .acpanel .acgroup .clr:hover { color:var(--warn); }
+  .acrow {
+    display:grid; grid-template-columns:minmax(88px,auto) minmax(64px,auto) 1fr auto;
+    gap:10px; align-items:baseline; padding:6px 12px; cursor:pointer;
+    border-left:3px solid transparent;
+  }
+  .acrow:hover, .acrow.on {
+    background:#fbf8f2; border-left-color:#c9a961;
+  }
+  .acrow .an { font-size:14.5px; font-weight:600; white-space:nowrap; }
+  .acrow .as { font-family:var(--mono); font-size:12px; color:var(--ink-faint);
+               white-space:nowrap; }
+  .acrow .ad { font-size:12.5px; color:var(--ink-soft); overflow:hidden;
+               text-overflow:ellipsis; white-space:nowrap; }
+  .acrow .ad .dm { font-family:var(--mono); color:var(--ink-faint); }
+  .acrow .am {
+    font-size:11px; color:var(--ink-faint); white-space:nowrap;
+    border:1px solid var(--line-soft); border-radius:3px; padding:0 5px;
+  }
+  .acrow .am.exact { color:var(--eq); border-color:#cfe2d6; background:#eef5f0; }
+  .acrow .am.pinyin { color:var(--integ); border-color:#cfe0e8; background:#eef4f7; }
+  /* 历史行：右侧带删除按钮 */
+  .acrow .hdel {
+    font-size:14px; color:var(--ink-faint); opacity:.5; padding:0 4px;
+    border-radius:3px; line-height:1;
+  }
+  .acrow .hdel:hover { opacity:1; color:var(--warn); background:#f2ece4; }
+  .acrow .htime { font-size:11px; color:var(--ink-faint); }
+  .acempty { padding:12px; font-size:12.5px; color:var(--ink-faint); text-align:center; }
+  button.go {
+    padding:9px 17px; font-size:14px; font-family:var(--sans);
+    background:var(--ink); color:#fff; border:none; border-radius:7px;
+    cursor:pointer; transition:opacity .15s;
+  }
+  button.go:hover { opacity:.85; }
+  .depthctl { font-size:12.5px; color:var(--ink-faint); display:flex; align-items:center; gap:5px; }
+  .depthctl select {
+    font-family:var(--sans); font-size:12.5px; padding:5px 7px;
+    border:1px solid var(--line); border-radius:6px; background:var(--surface); color:var(--ink);
+  }
+  .dpv {
+    font-size:11.5px; color:var(--ink-faint); max-width:230px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    border-left:1px solid var(--line); padding-left:8px;
+  }
+  @media (max-width: 900px) { .dpv { display:none; } }
+  .examples { margin-top:10px; display:flex; flex-wrap:wrap; gap:7px; align-items:center; }
+  .examples .lbl { font-size:12.5px; color:var(--ink-faint); }
+  .chip {
+    font-size:12.5px; padding:3px 10px; border-radius:20px; cursor:pointer;
+    background:var(--surface); border:1px solid var(--line); color:var(--ink-soft);
+    transition:all .15s;
+  }
+  .chip:hover { border-color:#c9a961; color:var(--ink); }
+
+  /* ---------- 提交按钮与待核实角标 ---------- */
+  .pendingbadge {
+    font-size:11.5px; padding:2px 9px; border-radius:20px; cursor:pointer;
+    background:#faf6e8; border:1px solid #ece0bd; color:var(--search);
+    white-space:nowrap;
+  }
+  .pendingbadge:hover { border-style:solid; background:#f7f0d8; }
+  #subbar {
+    position:fixed; right:18px; bottom:18px; z-index:30;
+  }
+  #subbar .pendingbadge {
+    box-shadow:0 3px 12px rgba(0,0,0,.10); background:var(--surface);
+    border-color:#e6dcc0; font-size:12.5px; padding:7px 14px;
+  }
+  #subbar .pendingbadge:hover { background:#faf6e8; }
+  .submitbtn {
+    font-size:11.5px; padding:1px 8px; border-radius:4px; cursor:pointer;
+    background:transparent; border:1px dashed var(--line);
+    color:var(--ink-faint); font-family:var(--sans);
+  }
+  .submitbtn:hover { border-color:var(--search); color:var(--search); }
+
+  /* 补录分支与存疑分支 */
+  .branch.submitted .mark { color:var(--eq); }
+  .branch.disputed .mark { color:var(--search); }
+  .branch.disputed { opacity:.8; }
+  .branch.disputed .expr::after {
+    content:"存疑"; font-size:10.5px; letter-spacing:.4px; color:var(--search);
+    border:1px dashed #ddc98a; border-radius:3px; padding:0 5px;
+    margin-left:8px; vertical-align:1px;
+  }
+  .subnote {
+    font-size:12.5px; color:var(--ink-faint); margin-top:3px;
+    border-left:2px solid var(--line); padding-left:8px;
+  }
+  .subnote .src { color:var(--ink-soft); }
+
+  /* ---------- 符号表折叠 ---------- */
+  .glossary { margin-top:2px; }
+  .glostoggle {
+    font-size:12px; color:var(--ink-faint); background:none; border:none;
+    cursor:pointer; padding:2px 0; font-family:var(--sans);
+    text-decoration:underline; text-underline-offset:2px;
+  }
+  .glostoggle:hover { color:var(--ink); }
+  .glotable { margin-top:8px; border-top:1px solid var(--line-soft); }
+  .glorow {
+    display:grid; grid-template-columns: 62px 108px 118px 1fr;
+    gap:10px; align-items:baseline; padding:6px 0;
+    border-bottom:1px dashed var(--line-soft); font-size:13px;
+  }
+  .glorow:last-child { border-bottom:none; }
+  .glorow .gs { font-family:var(--serif); font-size:15px; font-style:italic; }
+  .glorow .gz { color:var(--ink); }
+  .glorow .gu { font-family:var(--mono); font-size:12px; color:var(--ink-faint); }
+  .glorow .gm { color:var(--ink-soft); font-size:12.5px; line-height:1.55; }
+  .jumplink {
+    color:var(--integ); cursor:pointer; border-bottom:1px dotted var(--integ);
+  }
+  .jumplink:hover { color:#0d3f54; }
+
+  /* ---------- 提交弹窗 ---------- */
+  .modalwrap {
+    position:fixed; inset:0; z-index:100; display:flex;
+    align-items:center; justify-content:center; padding:20px;
+    background:rgba(28,26,23,.42); backdrop-filter:blur(2px);
+  }
+  .modal {
+    background:var(--surface); border-radius:12px; width:min(620px, 100%);
+    max-height:88vh; overflow:auto; box-shadow:0 16px 48px rgba(0,0,0,.22);
+  }
+  .modal h3 {
+    margin:0; padding:16px 20px 12px; font-size:16px;
+    border-bottom:1px solid var(--line-soft);
+  }
+  .modal .body { padding:16px 20px; }
+  .modal .foot {
+    padding:13px 20px 17px; border-top:1px solid var(--line-soft);
+    display:flex; gap:10px; justify-content:flex-end; align-items:center;
+  }
+  .field { margin-bottom:13px; }
+  .field label { display:block; font-size:12.5px; color:var(--ink-soft); margin-bottom:4px; }
+  .field .ro {
+    font-family:var(--mono); font-size:13px; background:#f7f4ee;
+    border:1px solid var(--line-soft); border-radius:5px; padding:6px 10px;
+    color:var(--ink-soft);
+  }
+  .field input, .field textarea {
+    width:100%; font-family:var(--sans); font-size:13.5px; color:var(--ink);
+    background:#fdfcf9; border:1px solid var(--line); border-radius:6px;
+    padding:7px 10px; outline:none;
+  }
+  .field input:focus, .field textarea:focus {
+    border-color:#c9a961; box-shadow:0 0 0 3px rgba(201,169,97,.13);
+  }
+  .field textarea { min-height:64px; resize:vertical; line-height:1.6; }
+  .field .hint { font-size:11.5px; color:var(--ink-faint); margin-top:3px; }
+  button.primary {
+    padding:8px 18px; font-size:13.5px; font-family:var(--sans);
+    background:var(--ink); color:#fff; border:none; border-radius:7px; cursor:pointer;
+  }
+  button.primary:hover { opacity:.86; }
+  button.primary:disabled { opacity:.5; cursor:default; }
+  button.ghost {
+    padding:8px 15px; font-size:13.5px; font-family:var(--sans);
+    background:var(--surface); color:var(--ink-soft);
+    border:1px solid var(--line); border-radius:7px; cursor:pointer;
+  }
+  button.ghost:hover { border-color:#c9a961; color:var(--ink); }
+  .modal .err { margin-bottom:12px; font-size:13px; padding:9px 13px; }
+  .modal .ok {
+    margin-bottom:12px; font-size:13px; padding:9px 13px; border-radius:7px;
+    background:#eef5f0; border:1px solid #cfe2d6; color:#2f6f4f;
+  }
+
+  /* ---------- 待核实清单 ---------- */
+  .subitem {
+    padding:10px 0; border-bottom:1px dashed var(--line-soft);
+  }
+  .subitem:last-child { border-bottom:none; }
+  .subitem .top { display:flex; gap:9px; align-items:baseline; flex-wrap:wrap; }
+  .subitem .ex { font-family:var(--mono); font-size:13.5px; }
+  .subitem .st {
+    font-size:11px; padding:1px 8px; border-radius:20px;
+    border:1px solid var(--line); color:var(--ink-faint);
+  }
+  .subitem .st.verified { background:#eef5f0; color:var(--eq); border-color:#cfe2d6; }
+  .subitem .st.disputed { background:#faf6e8; color:var(--search); border-color:#ece0bd; }
+  .subitem .meta { font-size:12px; color:var(--ink-faint); margin-top:3px; }
+  .subitem .txt { font-size:13px; color:var(--ink-soft); margin-top:4px; line-height:1.6; }
+
+  /* ---------- 主体 ---------- */
+  main { max-width: 1000px; margin:0 auto; padding: 22px 26px 90px; }
+
+  .hint { color:var(--ink-faint); font-size:14px; padding:34px 4px; text-align:center; line-height:1.9; }
+  .hint code { font-family:var(--mono); background:var(--surface);
+               border:1px solid var(--line); border-radius:4px; padding:1px 6px; font-size:13px; }
+
+  .err {
+    background:#fdf4f1; border:1px solid #eccfc6; border-left:4px solid var(--warn);
+    border-radius:8px; padding:14px 17px; color:#7d2c1e; font-size:14px;
+  }
+  .err b { font-weight:600; }
+
+  /* ---------- 实体卡片 ---------- */
+  .card {
+    background:var(--surface); border:1px solid var(--line); border-radius:11px;
+    margin-bottom:20px; overflow:hidden;
+  }
+  .card > .head { padding:16px 20px 14px; border-bottom:1px solid var(--line-soft); }
+  .titleline { display:flex; align-items:baseline; gap:11px; flex-wrap:wrap; }
+  .zh { font-size:21px; font-weight:600; letter-spacing:.4px; }
+  .sym { font-family:var(--mono); font-size:15px; color:var(--ink-soft); }
+  .cat { font-size:12px; color:var(--ink-faint); border:1px solid var(--line);
+         border-radius:4px; padding:1px 7px; }
+  .struct {
+    font-size:11.5px; font-weight:600; letter-spacing:.5px;
+    padding:2px 8px; border-radius:4px; background:#f3eefa; color:var(--matrix);
+    border:1px solid #e0d3ec;
+  }
+  .dimrow { margin-top:11px; display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; }
+  .dimbox {
+    font-family:var(--mono); font-size:15px; letter-spacing:.4px;
+    background:#f7f4ee; border:1px solid var(--line); border-radius:6px;
+    padding:4px 11px; color:var(--ink);
+  }
+  .dimzh { font-size:13px; color:var(--ink-faint); }
+  .forms { margin-top:9px; font-size:13.5px; color:var(--ink-soft); }
+  .forms .k { color:var(--ink-faint); font-size:12.5px; }
+  .forms code {
+    font-family:var(--mono); font-size:13px; background:#f7f4ee;
+    border:1px solid var(--line-soft); border-radius:4px; padding:1px 6px; margin-right:4px;
+  }
+  .note { margin-top:9px; font-size:13px; color:var(--ink-faint); line-height:1.6; }
+
+  /* 同量纲异构警示：这是教学价值点，视觉上必须显眼但不吓人 */
+  .homog {
+    margin-top:12px; background:#fdf7f4; border:1px solid #eedfd6;
+    border-left:3px solid var(--warn); border-radius:6px; padding:9px 13px;
+    font-size:13.5px; color:#7a3a2a;
+  }
+  .homog .t { font-weight:600; }
+  .homog .d { color:#96705f; font-size:12.5px; margin-top:2px; }
+
+  /* ---------- 区块 ---------- */
+  section { padding:15px 20px 17px; }
+  section + section { border-top:1px solid var(--line-soft); }
+  section > h3 {
+    margin:0 0 11px; font-size:13px; font-weight:600; letter-spacing:.6px;
+    color:var(--ink-soft); display:flex; align-items:center; gap:9px;
+  }
+  section > h3 .cnt { font-weight:400; color:var(--ink-faint); font-size:12px; }
+
+  /* ---------- 首页分类浏览 ---------- */
+  .browsehead {
+    display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;
+    margin:6px 0 16px; padding-bottom:10px;
+    border-bottom:1px solid var(--line);
+  }
+  .browsehead h2 { margin:0; font-size:17px; font-weight:600; letter-spacing:.3px; }
+  .browsehead .note { font-size:12.5px; color:var(--ink-faint); }
+  .browsehead .cnt { font-size:12.5px; color:var(--ink-faint); margin-left:auto; }
+  .domgrid {
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(310px, 1fr));
+    gap:14px;
+  }
+  .domcard {
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:10px; padding:14px 16px 12px;
+  }
+  .domcard .dh {
+    display:flex; align-items:baseline; gap:8px; margin-bottom:3px;
+  }
+  .domcard .dh .zh { font-size:15.5px; font-weight:600; }
+  .domcard .dh .en {
+    font-size:11.5px; color:var(--ink-faint); letter-spacing:.3px;
+  }
+  .domcard .dh .n {
+    margin-left:auto; font-size:11.5px; color:var(--ink-faint);
+    font-family:var(--mono);
+  }
+  .domcard .dd {
+    font-size:12px; color:var(--ink-faint); line-height:1.6;
+    margin-bottom:10px; min-height:2.2em;
+  }
+  .domlist { display:flex; flex-wrap:wrap; gap:6px; }
+  .domitem {
+    font-size:12.5px; padding:3px 9px; border-radius:5px; cursor:pointer;
+    background:#f8f5ef; border:1px solid var(--line-soft); color:var(--ink-soft);
+    transition:all .13s; display:inline-flex; align-items:baseline; gap:5px;
+  }
+  .domitem:hover {
+    border-color:#c9a961; color:var(--ink); background:#fdfaf3;
+  }
+  .domitem .sym {
+    font-family:var(--mono); font-size:10.5px; color:var(--ink-faint);
+  }
+  .domempty {
+    font-size:12px; color:var(--ink-faint); font-style:italic;
+  }
+  .sugpanel {
+    margin-bottom:16px; background:var(--surface);
+    border:1px solid var(--line); border-left:4px solid var(--integ);
+    border-radius:9px; padding:14px 18px 12px;
+  }
+  .sugpanel .head {
+    font-size:13px; color:var(--ink-soft); margin-bottom:10px;
+  }
+  .sugpanel .head b { color:var(--ink); }
+  .suglist { display:flex; flex-direction:column; gap:1px; }
+  .sugrow {
+    display:grid; grid-template-columns: minmax(84px,auto) minmax(96px,auto) 1fr;
+    gap:12px; align-items:baseline; padding:7px 0;
+    border-bottom:1px dashed var(--line-soft); cursor:pointer;
+  }
+  .sugrow:last-child { border-bottom:none; }
+  .sugrow:hover { background:#fbf9f4; }
+  .sugrow .sz { font-size:15px; font-weight:600; }
+  .sugrow .ss { font-family:var(--mono); font-size:12.5px; color:var(--ink-faint); }
+  .sugrow .sd { font-size:12.5px; color:var(--ink-soft); }
+  .sugrow .sd .dim { font-family:var(--mono); color:var(--ink-faint); }
+
+  /* ---------- 定义式（单独列出）---------- */
+  section.defs { background:#fbfaf6; }
+  section.defs .defrow {
+    padding:11px 0; border-bottom:1px dashed var(--line-soft);
+  }
+  section.defs .defrow:last-child { border-bottom:none; }
+  section.defs .defeq {
+    font-family:var(--serif); font-size:19px; letter-spacing:.3px;
+    color:var(--ink);
+  }
+  section.defs .defnote {
+    font-size:13px; color:var(--ink-soft); margin-top:5px; line-height:1.65;
+  }
+
+  /* ---------- 可折叠的同类条目列表 ---------- */
+  /* 按钮独占一行放在末尾：inline 时它会跟着文字流走，读起来像
+     「abc 收起 efg」。块级显示后是「A、B、C、D…」换行「收起 ⤴」。 */
+  .groupmore {
+    display:inline-block; margin-top:3px;
+    color:var(--integ); cursor:pointer; white-space:nowrap;
+    font-size:12.5px; padding:1px 7px; border-radius:4px;
+    background:#f2f6f8; border:1px solid #d8e5ec;
+    transition:background .14s, border-color .14s;
+  }
+  .groupmore:hover { background:#e8f1f5; border-color:#bcd3de; color:#0d3f54; }
+  .groupmore.open { color:var(--ink-soft); background:#f5f3ee;
+                    border-color:var(--line); }
+  .grouprest { color:inherit; }
+  .groupellip { color:var(--ink-faint); }
+
+  /* ---------- 页面跳转目录（右侧固定、垂直居中）----------
+     结构：#tocwrap 是撑满视口高度的固定层，用 flex 把 #toc 居中。
+     这样 #toc 高度变化时中点不动 —— 初版用 transform:translateY(-33%)，
+     百分比是按**自身高度**算的，条目一拉长整条目录就上下跳。 */
+  #tocwrap {
+    position:fixed; top:0; bottom:0; right:26px; z-index:25;
+    display:flex; align-items:center; justify-content:flex-end;
+    pointer-events:none; padding:80px 0;
+  }
+  #toc {
+    pointer-events:auto;
+    max-height:min(60vh, 620px); overflow-y:auto; overflow-x:hidden;
+    display:flex; flex-direction:column; gap:3px;
+    padding:12px 4px 12px 0; scrollbar-width:thin;
+    border-radius:10px;
+  }
+  #toc::-webkit-scrollbar { width:5px; }
+  #toc::-webkit-scrollbar-thumb { background:#ded7cb; border-radius:3px; }
+  #toc .tochead {
+    font-size:12px; letter-spacing:.5px; color:var(--ink-faint);
+    padding:0 4px 8px; opacity:.75; white-space:nowrap;
+  }
+  #toc a {
+    display:flex; align-items:baseline; gap:9px;
+    text-decoration:none; white-space:nowrap;
+    padding:7px 4px 7px 11px; border-left:3px solid var(--line);
+    color:var(--ink-faint); opacity:.55;
+    transition:opacity .16s, border-color .16s, background .16s;
+    max-width:230px; overflow:hidden;
+  }
+  #toc a .toczh { font-size:14px; flex:0 0 auto; }
+  #toc a .tocdesc {
+    font-size:12px; color:var(--ink-faint); opacity:0;
+    transition:opacity .16s; overflow:hidden; text-overflow:ellipsis;
+  }
+  /* 鼠标未停留：只显示中文名、低明度。宽度足够放下常见词条名，
+     不再收到 52px 那种「小到看不清」的程度。 */
+  #toc a:hover {
+    max-width:330px; opacity:.85; border-left-color:#b9b1a4;
+    color:var(--ink-soft);
+    background:linear-gradient(90deg,rgba(244,241,234,.9),transparent);
+  }
+  #toc a:hover .tocdesc { opacity:.9; }
+  /* 当前停留：常驻拉长、示出描述、高明度 */
+  #toc a.active {
+    max-width:330px; opacity:1; border-left-color:var(--ink);
+    color:var(--ink); font-weight:600;
+    background:linear-gradient(90deg,rgba(239,234,224,.95),transparent);
+  }
+  #toc a.active .tocdesc { opacity:.75; }
+  @media (max-width: 1400px) { #tocwrap { display:none; } }
+
+  /* ---------- 空槽位与占位（页面规范 §1） ----------
+     用户要求「找不到依旧留空占位 or 补录」。所以槽位永远存在，
+     只是里面换成三种状态之一：
+       .slotna    不适用 —— 说明**为什么**本就没有
+       .slotmiss  暂缺   —— 应该有但没收录，带补录入口
+     两者的视觉必须能区分：前者是灰底说明，后者带虚线与按钮。 */
+  .slotna {
+    font-size:12.5px; color:var(--ink-faint); font-style:italic;
+    padding:7px 11px; background:#faf9f6; border:1px solid var(--line-soft);
+    border-radius:6px; line-height:1.65;
+  }
+  .slotmiss {
+    font-size:13px; color:var(--ink-soft);
+    padding:9px 12px; background:#fdfcf7; border:1px dashed #ddd5c2;
+    border-radius:6px; display:flex; align-items:baseline; gap:10px;
+    flex-wrap:wrap; line-height:1.65;
+  }
+  .slotmiss .big { color:var(--ink); font-weight:600; }
+  .slotwho {
+    font-size:11.5px; color:var(--ink-faint); border:1px solid var(--line-soft);
+    background:#f7f4ee; border-radius:4px; padding:1px 7px; white-space:nowrap;
+  }
+  section > h3 .state {
+    font-weight:400; font-size:11.5px; color:var(--ink-faint);
+    border:1px dashed var(--line); border-radius:4px; padding:0 6px;
+  }
+  section.slotempty > h3 { color:var(--ink-faint); }
+
+  /* ---------- 常见写法（逐条：写法 + 中文读法 + 补充说明） ---------- */
+  .formlist { display:flex; flex-direction:column; gap:1px; }
+  .formitem {
+    display:grid; grid-template-columns:minmax(130px,auto) 1fr;
+    gap:8px 14px; align-items:baseline; padding:7px 0;
+    border-bottom:1px dashed var(--line-soft);
+  }
+  .formitem:last-child { border-bottom:none; }
+  .formitem .fe {
+    font-family:var(--mono); font-size:14px; color:var(--ink);
+  }
+  .formitem .fz { font-size:13.5px; color:var(--ink-soft); }
+  .formitem .fn {
+    grid-column:2; font-size:12.5px; color:var(--ink-faint);
+    line-height:1.6;
+  }
+
+  /* ---------- 分支 ---------- */
+  .homogmore {
+    color:var(--integ); cursor:pointer; border-bottom:1px dotted var(--integ);
+    font-size:12.5px; white-space:nowrap;
+  }
+  .homogmore:hover { color:#0d3f54; }
+  .homogrest { color:inherit; }
+  .branch {
+    display:grid; grid-template-columns: 26px 1fr; gap:2px 10px;
+    padding:8px 0; border-bottom:1px dashed var(--line-soft);
+  }
+  .branch:last-child { border-bottom:none; }
+  .branch .mark {
+    font-family:var(--mono); font-size:15px; text-align:center; line-height:1.5;
+    font-weight:600;
+  }
+  .branch.equivalence .mark { color:var(--eq); }
+  .branch.derivative  .mark { color:var(--deriv); }
+  .branch.integral    .mark { color:var(--integ); }
+  .branch.matrix      .mark { color:var(--matrix); }
+  .branch.search      .mark { color:var(--search); }
+
+  .expr { font-family:var(--mono); font-size:14.5px; letter-spacing:.3px; }
+  .expr sub, .expr sup { font-size:.74em; }
+  .expr .times { color:var(--ink-faint); }
+  .zhname { font-size:13.5px; color:var(--ink-soft); margin-top:1px; }
+  .via { font-size:12.5px; color:var(--ink-faint); margin-top:3px; }
+  .via .formula {
+    font-family:var(--serif); font-size:14px; color:var(--ink-soft);
+    background:#f7f4ee; border:1px solid var(--line-soft);
+    border-radius:4px; padding:1px 7px; margin-right:6px;
+  }
+  .via .fname { color:var(--ink-faint); }
+  .points { font-size:12.5px; color:var(--ink-faint); margin-top:3px; }
+  .points .also { color:var(--warn); }
+
+  .badge {
+    display:inline-block; font-size:11px; font-weight:600; letter-spacing:.4px;
+    padding:1px 7px; border-radius:4px; margin-right:7px; vertical-align:1px;
+  }
+  .badge.equivalence { background:#eef5f0; color:var(--eq); border:1px solid #cfe2d6; }
+  .badge.derivative  { background:#faf3e8; color:var(--deriv); border:1px solid #eadbc2; }
+  .badge.integral    { background:#eef4f7; color:var(--integ); border:1px solid #cfe0e8; }
+  .badge.matrix      { background:#f3eefa; color:var(--matrix); border:1px solid #e0d3ec; }
+  .badge.search      { background:#faf6e8; color:var(--search); border:1px solid #ece0bd; }
+
+  /* 算法枚举分支：必须视觉上明确区分于有物理来源的分支 */
+  .branch.search { opacity:.72; }
+  .branch.search .expr::after {
+    content:"算法枚举"; font-size:10.5px; letter-spacing:.4px;
+    color:var(--search); border:1px dashed #ddc98a; border-radius:3px;
+    padding:0 5px; margin-left:8px; vertical-align:1px;
+  }
+
+  /* 算法枚举区块：与公式来源在视觉上必须能一眼分开 */
+  section.searched { background:#fdfcf9; }
+  section.searched > h3 { color:var(--search); }
+  .searchwarn {
+    font-size:12.5px; color:#8a7635; background:#faf6e8;
+    border:1px solid #ece0bd; border-radius:6px; padding:7px 11px;
+    margin-bottom:10px; line-height:1.6;
+  }
+  .morebtn {
+    display:inline-block; margin:2px 0 0; padding:7px 15px; font-size:13.5px;
+    font-family:var(--sans); background:#fdfcf9; color:var(--search);
+    border:1px dashed #ddc98a; border-radius:7px; cursor:pointer;
+    transition:all .15s;
+  }
+  .morebtn:hover { background:#faf6e8; border-style:solid; }
+  .morebtn:disabled { opacity:.55; cursor:default; border-style:solid; }
+  .morewrap { padding:13px 20px 15px; }
+  .searchmeta { font-size:12px; color:var(--ink-faint); margin-top:8px; }
+
+  /* ---------- 公式列表 ---------- */
+  .flist { display:flex; flex-direction:column; gap:1px; }
+  .frow {
+    display:grid; grid-template-columns: minmax(150px, 1.1fr) 1.5fr auto;
+    gap:12px; align-items:baseline; padding:7px 0;
+    border-bottom:1px dashed var(--line-soft);
+  }
+  .frow:last-child { border-bottom:none; }
+  .frow .fx { font-family:var(--serif); font-size:15.5px; }
+  .frow .fz { font-size:13.5px; color:var(--ink-soft); }
+  .frow .fp {
+    font-size:11.5px; color:var(--ink-faint); white-space:nowrap;
+    border:1px solid var(--line); border-radius:4px; padding:1px 7px;
+  }
+
+  /* ---------- 图例 ---------- */
+  /* 「反读」标记：这类分支的来源是同一条公式掉头读，不是另一条公式 */
+  .badge.inverse {
+    background:#f3eefa; color:var(--matrix); border:1px solid #e0d3ec;
+  }
+  .legend {
+    margin-top:34px; padding:15px 18px; background:var(--surface);
+    border:1px solid var(--line); border-radius:10px; font-size:13px;
+  }
+  .legend h4 { margin:0 0 10px; font-size:12.5px; letter-spacing:.6px; color:var(--ink-soft); }
+  .legend .row { display:flex; gap:11px; padding:5px 0; align-items:baseline; }
+  .legend .row .m { font-family:var(--mono); font-weight:600; width:22px; text-align:center; }
+  .legend .row .nm { font-weight:600; min-width:72px; }
+  .legend .row .ex { color:var(--ink-faint); font-size:12.5px; }
+  .stats { margin-top:11px; padding-top:10px; border-top:1px solid var(--line-soft);
+           font-size:12.5px; color:var(--ink-faint); }
+
+  @media (max-width: 680px) {
+    main { padding:16px 13px 70px; }
+    header { padding:11px 13px 10px; }
+    .frow { grid-template-columns:1fr; gap:2px; }
+    .frow .fp { justify-self:start; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <h1>量纲关系浏览器</h1>
+    <span class="sub">按现实物理式子展开 · 每一步保留中文名</span>
+  </div>
+  <div class="searchrow">
+    <div class="searchbox" id="searchbox">
+      <input id="q" type="search" autocomplete="off" spellcheck="false"
+             role="combobox" aria-expanded="false" aria-controls="ac"
+             placeholder="输入单位或物理量：牛 / N / 电场强度 / 力矩 / 转动惯量 / 扭矩">
+      <!-- 联想面板：输入时给候选，聚焦且为空时给历史。
+           历史原先常驻在页面下方（.histrow），用户要求「只有当前正在
+           搜索时才会弹出历史记录」——所以它现在是这个面板的一种内容。 -->
+      <div class="acpanel" id="ac" hidden></div>
+    </div>
+    <button class="go" id="go">查询</button>
+    <label class="depthctl" id="depthctl">
+      <span id="depthlabel">分支展开</span>
+      <select id="depth" title="控制单位组合树往下展开几层">
+        <option value="0">不展开</option>
+        <option value="1">1 层</option>
+        <option value="2" selected>2 层</option>
+        <option value="3">3 层</option>
+      </select>
+      <span class="dpv" id="depthhint"></span>
+    </label>
+  </div>
+  <div class="examples" id="examples"></div>
+</header>
+<!-- 补录角标固定在 header 里，不能放进 #out：
+     #out 会被每次查询的 paint() 整体覆盖，放进去会被抹掉（踩过的坑）。 -->
+<div id="subbar">
+  <button class="pendingbadge" id="pendingbadge" title="查看已提交的补录">补录：暂无</button>
+</div>
+
+<main id="out">
+  <div class="hint">
+    输入一个单位或物理量的名称，看它的 SI 量纲、同量纲的各种写法、<br>
+    以及产生这些关系的现实物理式子。<br><br>
+    支持中文名（<code>牛</code>）、符号（<code>N</code>）、组合式（<code>N/C</code>）。<br>
+    也可以直接在下方按领域浏览全部词条。
+  </div>
+</main>
+
+<!-- 首页分类浏览：不搜索也能到达每一个词条。
+     它与查询结果互斥显示，所以放在 #out 之外，避免被 paint() 覆盖。 -->
+<section id="home" hidden></section>
+
+<div id="modal"></div>
+
+<script>
+"use strict";
+
+/* ============================================================
+   公式渲染器：把 ASCII 记号转成 HTML。
+   设计文档 5.2 选了「HTML 自绘」而非引入 KaTeX，以守住零依赖。
+   只处理我们数据里真实存在的记号，不做通用 LaTeX。
+   ============================================================ */
+const GREEK = [
+  ["alpha","α"],["beta","β"],["gamma","γ"],["delta","δ"],["epsilon","ε"],
+  ["theta","θ"],["lambda","λ"],["mu","μ"],["nu","ν"],["rho","ρ"],
+  ["sigma","σ"],["tau","τ"],["phi","φ"],["omega","ω"],["pi","π"],
+  ["Delta","Δ"],["Omega","Ω"],["Sigma","Σ"],
+];
+const SUP = {"0":"⁰","1":"¹","2":"²","3":"³","4":"⁴","5":"⁵","6":"⁶",
+             "7":"⁷","8":"⁸","9":"⁹","-":"⁻","+":"⁺",".":"˙"};
+const SUB = {"0":"₀","1":"₁","2":"₂","3":"₃","4":"₄","5":"₅","6":"₆",
+             "7":"₇","8":"₈","9":"₉"};
+
+function esc(s) {
+  return String(s).replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+}
+
+/* 渲染单位/量纲表达式：kg·m^2/s^2 -> kg·m²/s² */
+function renderExpr(text) {
+  let s = esc(text);
+  // ^ 后跟整数（含负号）→ Unicode 上标
+  s = s.replace(/\^\{?(-?\d+)\}?/g, (m, d) => (d[0] === "-" ? "⁻" : "") +
+      d.replace("-","").split("").map(c => SUP[c] || c).join(""));
+  // ^ 后跟其它（小数、字母）→ <sup>
+  s = s.replace(/\^(-?[0-9a-zA-Z.()]+)/g, "<sup>$1</sup>");
+  // 下标：字母后的单个数字（v0、m1、m2、E_k 除外——下划线单独处理）
+  s = s.replace(/([A-Za-z\u0370-\u03ff])_([A-Za-z0-9]+)/g,
+      (m, a, b) => a + "<sub>" + b + "</sub>");
+  s = s.replace(/([A-Za-z\u0370-\u03ff])([0-9])(?![0-9A-Za-z])/g,
+      (m, a, d) => a + (SUB[d] || d));
+  return s;
+}
+
+/* 渲染物理公式：F = -dU/dx、p = ∫F dt、I = ∫∫∫ r^2·rho dV */
+function renderFormula(text) {
+  let s = esc(text);
+  for (const [ascii, g] of GREEK) {
+    s = s.replace(new RegExp("(?<![A-Za-z])" + ascii + "(?![A-Za-z])", "g"), g);
+  }
+  s = s.replace(/\^\{?(-?\d+)\}?/g, (m, d) =>
+      "<sup>" + d + "</sup>");
+  s = s.replace(/([A-Za-z\u0370-\u03ff])_([A-Za-z0-9]+)/g,
+      (m, a, b) => a + "<sub>" + b + "</sub>");
+  s = s.replace(/([A-Za-z\u0370-\u03ff])([0-9])(?![0-9A-Za-z])/g,
+      (m, a, d) => a + "<sub>" + d + "</sub>");
+  return s;
+}
+
+const MARKS = {equivalence:"≡", derivative:"∂", integral:"∫", matrix:"▦", search:"?"};
+
+/* ============================================================
+   搜索历史：localStorage，时间倒序，越近越优先
+   ============================================================
+   历史的**展示位置**改过一版：原先常驻在输入框下方一条横条里，
+   用户要求「历史记录功能请移入搜索功能，只有当前正在搜索时才会弹出」。
+   现在它是联想面板的一种内容（聚焦且输入为空时显示），
+   存储格式与淘汰规则完全不变。 */
+const HIST_KEY = "dimbrowser.history.v1";
+const HIST_MAX = 50;   // 需求是「不低于 10 个」，留足余量
+
+function histLoad() {
+  try {
+    const raw = localStorage.getItem(HIST_KEY);
+    if (!raw) return [];
+    const arr = JSON.parse(raw);
+    if (!Array.isArray(arr)) return [];
+    return arr
+      .filter(x => x && typeof x.q === "string" && x.q.trim())
+      // 注意必须保留 label：这里曾经只重建 {q, ts}，把 label 丢掉了，
+      // 结果「历史显示点击文本」的功能从未生效——存储里是对的，
+      // 读出来的对象却没有 label，渲染层只能退回显示查询词。
+      .map(x => ({
+        q: String(x.q),
+        label: typeof x.label === "string" && x.label.trim()
+          ? x.label : String(x.q),
+        ts: Number(x.ts) || 0,
+      }))
+      .sort((a, b) => b.ts - a.ts)          // 时间倒序：越近越靠前
+      .slice(0, HIST_MAX);
+  } catch (e) {
+    return [];   // localStorage 不可用或内容损坏时静默降级
+  }
+}
+
+function histSave(list) {
+  try {
+    localStorage.setItem(HIST_KEY, JSON.stringify(list.slice(0, HIST_MAX)));
+  } catch (e) { /* 隐私模式或配额满：历史功能降级，不影响主功能 */ }
+}
+
+function histPush(q, label) {
+  const t = (q || "").trim();
+  if (!t) return;
+  const prev = histLoad().find(x => x.q === t);
+  // label 的优先顺序：本次显式传入 → 该条已存的 label → 查询词本身。
+  // 中间那一档是必需的：点历史行重查时不带 label，若不沿用已存值
+  // 就会把「重力」覆盖成 id `weight`（修过的 bug）。
+  const useLabel = (label || "").trim() || (prev && prev.label) || t;
+  const list = histLoad().filter(x => x.q !== t);
+  list.unshift({ q: t, label: useLabel, ts: Date.now() });
+  histSave(list);
+}
+
+function histRemove(q) {
+  histSave(histLoad().filter(x => x.q !== q));
+  acShowHistory();
+}
+
+function fmtTime(ts) {
+  if (!ts) return "";
+  const d = new Date(ts);
+  const p = n => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ` +
+         `${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+/* ============================================================
+   联想面板：输入即时给候选，聚焦且为空时给历史
+   ============================================================
+   两个用户要求在这里合并成一套交互：
+     「输入 a 可以匹配到 ab，但 abc 不能匹配到 ab」（匹配做得更宽）
+     「希望可以直接在输入的同时匹配可能结果」（不再是点查询才匹配）
+     「历史记录移入搜索功能，只有正在搜索时才弹出」
+   匹配打分全部在引擎侧（engine/matcher.py），前端只做渲染与键盘导航——
+   这样「为什么这条排在前面」永远可以在 Python 里复现和测试。 */
+const acEl = document.getElementById("ac");
+
+const AC = {
+  mode: "closed",   // closed | history | suggest
+  items: [],        // 当前面板里的行（历史行或候选行）
+  active: -1,       // 键盘高亮的下标
+  seq: 0,           // 请求序号：只有最后一次响应才允许上屏
+};
+
+function acClose() {
+  AC.mode = "closed";
+  AC.items = [];
+  AC.active = -1;
+  acEl.hidden = true;
+  acEl.innerHTML = "";
+  input.setAttribute("aria-expanded", "false");
+}
+
+function acOpen(mode) {
+  AC.mode = mode;
+  AC.active = -1;
+  acEl.hidden = false;
+  input.setAttribute("aria-expanded", "true");
+}
+
+function acRender(html) {
+  acEl.innerHTML = html;
+}
+
+/* 历史记录：只在「输入框聚焦且内容为空」时出现 */
+function acShowHistory() {
+  const list = histLoad();
+  if (!list.length) { acClose(); return; }
+  const rows = list.map((x, i) =>
+    '<div class="acrow" data-hq="' + esc(x.q) + '" data-hlabel="' +
+      esc(x.label || x.q) + '" data-idx="' + i + '">' +
+      '<span class="an">' + esc(x.label || x.q) + '</span>' +
+      '<span class="as">' + (x.label && x.label !== x.q ? esc(x.q) : "") +
+        '</span>' +
+      '<span class="ad htime">' + esc(fmtTime(x.ts)) + '</span>' +
+      '<span class="hdel" data-hdel="' + esc(x.q) + '" title="删除这条">×</span>' +
+    '</div>').join("");
+  AC.items = list.map(x => ({ kind: "history", q: x.q, label: x.label }));
+  acOpen("history");
+  acRender(
+    '<div class="acgroup">搜索历史（' + list.length + ' 条 · 越近越靠前）' +
+      '<button class="clr" data-hclear="1">清空全部</button></div>' + rows);
+}
+
+/* 候选：输入的同时请求 /api/suggest */
+async function acShowSuggest(q) {
+  const seq = ++AC.seq;
+  let data;
+  try {
+    const r = await fetch("/api/suggest?limit=9&q=" + encodeURIComponent(q));
+    if (!r.ok) { acClose(); return; }
+    data = await r.json();
+  } catch (e) { acClose(); return; }
+  // 迟到的响应不能覆盖新结果：快速连打时会有多个请求在飞
+  if (seq !== AC.seq) return;
+  const items = data.items || [];
+  if (!items.length) {
+    // 没有候选时退回历史：用户多半是想重查之前看过的东西。
+    // 这比显示一块「没有找到」的空面板有用得多。
+    if (histLoad().length) { acShowHistory(); return; }
+    AC.items = [];
+    acOpen("suggest");
+    acRender('<div class="acempty">没有找到「' + esc(q) +
+      '」。<br>可以直接回车当作单位组合式求值，或换个说法试试。</div>');
+    return;
+  }
+  const rows = items.map((it, i) => {
+    const desc = [it.dim_si, (it.unit_forms || []).join(" / ")]
+      .filter(Boolean).join("　");
+    const cls = it.match === "exact" ? "am exact"
+      : (it.via === "pinyin" ? "am pinyin" : "am");
+    return '<div class="acrow" data-jump="' + esc(it.id) + '" data-jump-label="' +
+        esc(it.zh) + '" data-idx="' + i + '">' +
+        '<span class="an">' + esc(it.zh) + '</span>' +
+        '<span class="as">' + esc(it.symbol) + '</span>' +
+        '<span class="ad"><span class="dm">' + renderExpr(desc) + '</span></span>' +
+        '<span class="' + cls + '">' + esc(it.match_zh) + '</span>' +
+      '</div>';
+  }).join("");
+  AC.items = items.map(it => ({ kind: "item", id: it.id, zh: it.zh,
+                                symbol: it.symbol }));
+  acOpen("suggest");
+  // 头部带一个「历史」切换：焦点落在已有文字上时看到的是候选，
+  // 没有一个入口的话「历史」就只剩「清空输入框」这一条路可达。
+  const histLink = histLoad().length
+    ? '<button class="clr" data-hshow="1">看历史（' + histLoad().length +
+      ' 条）</button>'
+    : "";
+  acRender('<div class="acgroup">「' + esc(q) + '」的可能结果（' +
+    items.length + ' 条 · 按匹配强度排序）' + histLink + '</div>' + rows);
+}
+
+/* 键盘导航：↑↓ 移动，回车采用高亮项，Esc 关闭 */
+function acMove(delta) {
+  if (acEl.hidden || !AC.items.length) return false;
+  const n = AC.items.length;
+  // active = -1 表示「没有高亮」。第一次按下时从首/末项进入循环。
+  let i = AC.active < 0 ? (delta > 0 ? 0 : n - 1) : AC.active + delta;
+  if (i < 0) i = n - 1;
+  if (i >= n) i = 0;
+  AC.active = i;
+  const rows = acEl.querySelectorAll(".acrow");
+  rows.forEach((r, k) => r.classList.toggle("on", k === i));
+  if (rows[i]) rows[i].scrollIntoView({ block: "nearest" });
+  return true;
+}
+
+function acAcceptActive() {
+  if (acEl.hidden || AC.active < 0) return false;
+  const row = acEl.querySelectorAll(".acrow")[AC.active];
+  if (!row) return false;
+  row.click();
+  return true;
+}
+
+let AC_TIMER = null;
+
+function acOnInput() {
+  const v = input.value.trim();
+  if (AC_TIMER) clearTimeout(AC_TIMER);
+  if (!v) { acShowHistory(); return; }
+  AC_TIMER = setTimeout(() => acShowSuggest(v), 90);
+}
+
+/* ============================================================
+   补录：弹窗 + 待核实清单
+   ============================================================
+   四种补录共用一套表单，但标题、必填项、提示语按 kind 切换
+   （页面规范 §5）。之所以不拆成四个函数：字段是同一批，
+   差别只在文案与校验，复制四份等于制造四份要同步维护的东西。 */
+
+const SUB_KINDS = {
+  formula: {
+    title: "补录一个现实物理式子",
+    needsExpr: true,
+    exprLabel: "这条量纲组合",
+    exprHint: "",
+    noteLabel: "说明：它出现在什么物理情境里？",
+    notePh: "例如：梁的弯曲刚度 EI 与曲率之积，量纲为 N·m²",
+    field: "量纲组合",
+  },
+  definition: {
+    title: "补录这个量的定义式",
+    needsExpr: true,
+    exprLabel: "定义式",
+    exprHint: "写成等式，例如 c = Q/(m·dT)。工具会检查两边的量纲是否齐次。",
+    noteLabel: "说明：它为什么是定义式而不是定律？",
+    notePh: "例如：这是把「比热容」定义为热量除以质量与温差之积，"
+            + "不需要实验验证，因此是定义式",
+    field: "定义式",
+  },
+  unit_form: {
+    title: "补录这个量的惯用写法",
+    needsExpr: true,
+    exprLabel: "惯用单位写法",
+    exprHint: "例如 N·m/rad、J/(kg·K)。中文读法由工具自动生成，不必填。",
+    noteLabel: "说明：这个写法用在什么场合？",
+    notePh: "例如：中文教材里力矩习惯带 rad，把它与能量区分开",
+    field: "常见写法",
+  },
+  note: {
+    title: "补充这个量的说明",
+    needsExpr: false,
+    exprLabel: "",
+    exprHint: "",
+    noteLabel: "描述：这个量是什么？",
+    notePh: "例如：单位面积上受到的正压力，量纲 M·L⁻¹·T⁻²，单位帕斯卡 Pa",
+    field: "条目说明",
+  },
+};
+
+function openSubmitModal(ctx) {
+  // ctx: {kind, query, dim, expr, zh, qid, qzh, slot}
+  const kind = SUB_KINDS[ctx.kind] ? ctx.kind : "formula";
+  const K = SUB_KINDS[kind];
+  const m = document.getElementById("modal");
+  const target = ctx.qzh
+    ? '<div class="field"><label>针对哪个词条</label>' +
+      '<div class="ro">' + esc(ctx.qzh) +
+      (ctx.qid ? '　<span style="color:#8d867c">' + esc(ctx.qid) + '</span>' : '') +
+      '</div></div>'
+    : "";
+  const exprField = K.needsExpr
+    ? '<div class="field"><label>' + esc(K.exprLabel) + '</label>' +
+      '<input id="fexpr" maxlength="200" placeholder="' +
+      esc(kind === "formula" ? "例如 N·m" : "例如 c = Q/(m·dT)") +
+      '" value="' + esc(ctx.expr || "") + '">' +
+      (K.exprHint ? '<div class="hint">' + esc(K.exprHint) + '</div>' : '') +
+      '</div>'
+    : "";
+  const dimField = (kind === "formula" && ctx.dim)
+    ? '<div class="field"><label>这条量纲组合</label>' +
+      '<div class="ro">' + renderExpr(ctx.expr || "") + '　＝　' +
+      renderExpr(ctx.dim) + '</div></div>'
+    : "";
+  m.innerHTML =
+    '<div class="modalwrap" data-close="1"><div class="modal">' +
+      '<h3>' + esc(K.title) + '</h3>' +
+      '<div class="body">' +
+        '<div id="modalfeedback"></div>' +
+        (ctx.slot
+          ? '<div class="hint" style="margin:0 0 12px">正在补：<b>' +
+            esc(ctx.slot) + '</b></div>'
+          : "") +
+        target + dimField + exprField +
+        '<div class="field"><label>它的中文名（可选）</label>' +
+          '<input id="fzh" maxlength="200" placeholder="例如：平方米·帕" value="' +
+          esc(ctx.zh || "") + '"></div>' +
+        '<div class="field"><label>' + esc(K.noteLabel) + '</label>' +
+          '<textarea id="fnote" maxlength="2000" placeholder="' +
+          esc(K.notePh) + '"></textarea>' +
+          '<div class="hint">这一栏是核实的主要依据，写得越具体越好。</div></div>' +
+        '<div class="field"><label>出处（可选，但强烈建议）</label>' +
+          '<input id="fsrc" maxlength="1000" placeholder="教材名 + 章节 + 页码，或论文链接"></div>' +
+      '</div>' +
+      '<div class="foot">' +
+        '<button class="ghost" data-close="1">取消</button>' +
+        '<button class="primary" id="fsubmit">提交待核实</button>' +
+      '</div>' +
+    '</div></div>';
+  m.querySelectorAll("[data-close]").forEach(el =>
+    el.addEventListener("click", ev => {
+      if (ev.target === el) closeModal();
+    }));
+  document.getElementById("fsubmit").addEventListener("click", () => {
+    submitForm(ctx, kind, K);
+  });
+  const first = document.getElementById(K.needsExpr ? "fexpr" : "fnote");
+  if (first) {
+    first.focus();
+    if (K.needsExpr && first.value) first.select();
+  }
+}
+
+function closeModal() { document.getElementById("modal").innerHTML = ""; }
+
+async function submitForm(ctx, kind, K) {
+  const fb = document.getElementById("modalfeedback");
+  const btn = document.getElementById("fsubmit");
+  const exprEl = document.getElementById("fexpr");
+  const expr = K.needsExpr && exprEl ? exprEl.value.trim() : "";
+  if (K.needsExpr && !expr) {
+    fb.innerHTML = '<div class="err">' + esc(K.exprLabel) + '不能为空。</div>';
+    if (exprEl) exprEl.focus();
+    return;
+  }
+  const payload = {
+    query: ctx.query || "",
+    kind: kind,
+    target_qid: ctx.qid || "",
+    target_dim: ctx.dim || "",
+    expr: expr,
+    zh: document.getElementById("fzh").value.trim(),
+    note: document.getElementById("fnote").value.trim(),
+    source: document.getElementById("fsrc").value.trim(),
+  };
+  btn.disabled = true;
+  btn.textContent = "提交中…";
+  try {
+    const r = await fetch("/api/submission", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    let data = {};
+    try { data = await r.json(); } catch (e) { /* 非 JSON 响应 */ }
+    if (!r.ok || !data.ok) {
+      // 把状态码与后端原文都显示出来，便于定位——只显示「提交失败」
+      // 会让真实原因（字段超长、缺必填项等）不可见。
+      const why = data.error || ("HTTP " + r.status + " " + r.statusText);
+      fb.innerHTML = '<div class="err">提交失败：' + esc(why) + '</div>';
+      btn.disabled = false;
+      btn.textContent = "提交待核实";
+      return;
+    }
+    fb.innerHTML = '<div class="ok">已记录，状态为「待核实」。' +
+      '核实通过后会填进页面上的这个槽位；核实不通过会标为「存疑」，' +
+      '但你填的内容会原样保留。</div>';
+    btn.textContent = "已提交";
+    refreshPendingBadge();
+    setTimeout(closeModal, 1600);
+  } catch (e) {
+    fb.innerHTML = '<div class="err">请求失败：' + esc(e.message) + '</div>';
+    btn.disabled = false;
+    btn.textContent = "提交待核实";
+  }
+}
+
+async function refreshPendingBadge() {
+  const el = document.getElementById("pendingbadge");
+  if (!el) return;
+  try {
+    const r = await fetch("/api/submissions");
+    const d = await r.json();
+    const c = d.counts || {};
+    const n = (c.pending || 0) + (c.verified || 0) + (c.disputed || 0);
+    el.textContent = n ? ("补录 " + n + " 条") : "补录：暂无";
+    el.title = `待核实 ${c.pending || 0} · 已核实 ${c.verified || 0} · 存疑 ${c.disputed || 0}`;
+  } catch (e) { /* 忽略 */ }
+}
+
+async function openSubmissionList() {
+  const m = document.getElementById("modal");
+  m.innerHTML = '<div class="modalwrap" data-close="1"><div class="modal">' +
+    '<h3>已提交的补录</h3><div class="body" id="sublist">加载中…</div>' +
+    '<div class="foot"><button class="ghost" data-close="1">关闭</button></div>' +
+    '</div></div>';
+  m.querySelectorAll("[data-close]").forEach(el =>
+    el.addEventListener("click", ev => { if (ev.target === el) closeModal(); }));
+  try {
+    const r = await fetch("/api/submissions");
+    const d = await r.json();
+    const box = document.getElementById("sublist");
+    if (d.load_error) {
+      box.innerHTML = '<div class="err">' + esc(d.load_error) + '</div>';
+      return;
+    }
+    if (!d.items.length) {
+      box.innerHTML = '<div class="hint">还没有提交过任何补录。<br>' +
+        '在「算法枚举」分支旁边点「补录」即可提交。</div>';
+      return;
+    }
+    const STZH = { pending: "待核实", verified: "已核实", disputed: "存疑" };
+    const KINDZH = { formula: "公式来源", definition: "定义式",
+                     unit_form: "常见写法", note: "条目说明" };
+    box.innerHTML = d.items.map(s =>
+      '<div class="subitem">' +
+        '<div class="top">' +
+          '<span class="ex">' + (s.expr ? renderExpr(s.expr) : "（说明类）") +
+            '</span>' +
+          '<span class="st ' + s.status + '">' + (STZH[s.status] || s.status) +
+            '</span>' +
+          '<span class="slotwho">' + esc(KINDZH[s.kind] || s.kind || "公式来源") +
+            '</span>' +
+          '<span class="meta">' + esc(s.target_dim) + '</span>' +
+        '</div>' +
+        (s.target_qid ? '<div class="meta">针对词条：' + esc(s.target_qid) + '</div>' : '') +
+        (s.zh ? '<div class="txt">中文名：' + esc(s.zh) + '</div>' : '') +
+        (s.note ? '<div class="txt">' + esc(s.note) + '</div>' : '') +
+        (s.source ? '<div class="meta">出处：' + esc(s.source) + '</div>' : '') +
+        '<div class="meta">提交于 ' + esc((s.created_at || "").replace("T", " ")) +
+          '　编号 ' + esc(s.id) + '</div>' +
+        (s.verify && s.verify.reason
+          ? '<div class="txt">核实意见：' + esc(s.verify.reason) + '</div>' : '') +
+      '</div>').join("");
+  } catch (e) {
+    document.getElementById("sublist").innerHTML =
+      '<div class="err">加载失败：' + esc(e.message) + '</div>';
+  }
+}
+
+/* ============================================================
+   渲染
+   ============================================================ */
+function renderBranch(b) {
+  const mark = MARKS[b.kind] || "·";
+  let via = "";
+  if (b.source.is_from_formula) {
+    via = '<div class="via"><span class="formula">' +
+          renderFormula(b.source.tex) + '</span>' +
+          '<span class="fname">' + esc(b.source.formula_zh) + '</span></div>';
+  }
+  let sub = "";
+  if (b.source.submitted_id) {
+    const KZ = { formula: "公式来源", definition: "定义式",
+                 unit_form: "常见写法", note: "条目说明" };
+    sub = '<div class="subnote">' +
+      (b.source.submitted_kind
+        ? '<span class="slotwho">补的是：' +
+          esc(KZ[b.source.submitted_kind] || b.source.submitted_kind) + '</span><br>'
+        : "") +
+      (b.source.note ? esc(b.source.note) : "") +
+      (b.source.submitted_source
+        ? '<br><span class="src">出处：' + esc(b.source.submitted_source) + '</span>'
+        : "") +
+      '<br>补录编号 ' + esc(b.source.submitted_id) + '</div>';
+  }
+  let points = "";
+  if (b.points_to && b.points_to.length) {
+    const mk = p => '<span class="jumplink" data-jump="' + esc(p.id) +
+      '" data-jump-label="' + esc(p.zh) + '">' +
+      esc(p.zh) + "（" + esc(p.symbol) + "）</span>";
+    points = '<div class="points">这也正是：' +
+      renderGroup(b.points_to, { render: mk, max: 2 }) + '</div>';
+  }
+  let note = "";
+  if (b.source.is_from_formula && b.source.note) {
+    note = '<div class="via"><span class="fname">' + esc(b.source.note) + '</span></div>';
+  }
+  // 反读出来的边必须说清来路：它不是另有一条公式，而是同一条公式
+  // 掉头读（微积分基本定理）。不标出来会让人以为数据里有两条式子。
+  let inv = "";
+  if (b.source.inverse) {
+    inv = '<div class="via"><span class="badge inverse">反读</span>' +
+      '<span class="fname">原式写的是 ' + renderExpr(b.source.inverse_of || "") +
+      ' → ' + renderExpr(b.expr) + '；按微积分基本定理掉头读</span></div>';
+  }
+  const kids = (b.children || []).map(renderBranch).join("");
+  return '<div class="branch ' + b.kind + '">' +
+           '<div class="mark">' + mark + '</div>' +
+           '<div>' +
+             '<div class="expr">' + renderExpr(b.expr) + '</div>' +
+             '<div class="zhname">' + esc(b.zh) + '</div>' +
+             note + inv + via + sub + points +
+           '</div>' +
+         '</div>' + kids;
+}
+
+/* 符号表：折叠展示公式里每个字母的名称与物理意义。
+
+   DOM id 必须带实例序号：同一条公式会出现在多张卡片下（力/重力都列出
+   「相关物理式子」），只用公式 id 做键会产生重复 id，getElementById
+   永远返回第一个 —— 这正是「点重力的展开，展开的却是力的」那个 bug。 */
+let GLO_SEQ = 0;
+
+function renderGlossary(f) {
+  const syms = f.symbols || [];
+  if (!syms.length) return "";
+  const gid = "glo-" + f.id + "-" + (++GLO_SEQ);
+  const rows = syms.map(s => {
+    const name = s.jump
+      ? '<span class="jumplink" data-jump="' + esc(s.jump) +
+        '" data-jump-label="' + esc(s.zh) + '">' + esc(s.zh) + '</span>'
+      : esc(s.zh);
+    return '<div class="glorow">' +
+      '<div class="gs">' + renderFormula(s.symbol) + '</div>' +
+      '<div class="gz">' + name + '</div>' +
+      '<div class="gu">' + (s.unit_sym
+          ? renderExpr(s.unit_sym)
+          : '<span style="color:#b3aca0">无因次</span>') + '</div>' +
+      '<div class="gm">' + esc(s.meaning) + '</div>' +
+    '</div>';
+  }).join("");
+  return '<div class="glossary">' +
+    '<button class="glostoggle" data-glo="' + gid + '">' +
+      '▸ 展开符号说明（' + syms.length + ' 个字母）</button>' +
+    '<div class="glotable" id="' + gid + '" hidden>' + rows + '</div>' +
+  '</div>';
+}
+
+function renderFormulas(list) {
+  if (!list.length) {
+    return slot({
+      title: "相关物理式子", hint: "量纲涉及这个量的式子", state: "miss",
+      cntText: "尚未收录",
+      body: slotMiss({ what: "还没有收录涉及这个量纲的公式", kind: "formula",
+                       slot: "相关物理式子" }),
+    });
+  }
+  const rows = list.map(f =>
+    '<div class="frow">' +
+      '<div class="fx">' + renderFormula(f.tex) + '</div>' +
+      '<div class="fz">' + esc(f.zh) +
+        renderGlossary(f) + '</div>' +
+      '<div class="fp">' + esc(f.pattern_zh || "") + '</div>' +
+    '</div>').join("");
+  return slot({
+    title: "相关物理式子", hint: "可展开看每个字母的含义",
+    count: list.length, cntText: list.length + " 条",
+    body: '<div class="flist">' + rows + '</div>',
+  });
+}
+
+/* 算法枚举分支旁的补录入口：填的是 formula 类槽位 */
+function renderSubmitButton(e, expr, slotName) {
+  if (!e.id) return "";
+  return ' <button class="submitbtn" data-sub-kind="formula"' +
+    ' data-sub-qid="' + esc(e.id) + '" data-sub-qzh="' + esc(e.zh) + '"' +
+    ' data-sub-expr="' + esc(expr) + '" data-sub-dim="' + esc(e.dim.si) + '"' +
+    ' data-sub-slot="' + esc(slotName || "公式来源") + '"' +
+    ' title="这个组合有现实物理式子吗？把你找到的提交进来">补录</button>';
+}
+
+function renderSearchSection(e, branches) {
+  if (!branches.length) {
+    return '<section class="searched"><h3>算法枚举' +
+      '<span class="cnt">展开更多</span></h3>' +
+      '<div class="searchwarn">搜索到有界范围内的尽头，没有更多有意义的组合了。' +
+      '这是有界搜索的正常结果，不是错误。</div></section>';
+  }
+  const rows = branches.map(b =>
+    '<div class="branch search">' +
+      '<div class="mark">?</div>' +
+      '<div>' +
+        '<div class="expr">' + renderExpr(b.expr) + '</div>' +
+        '<div class="zhname">' + esc(b.zh) +
+          renderSubmitButton(e, b.expr, "算法枚举组合") + '</div>' +
+      '</div>' +
+    '</div>').join("");
+  return '<section class="searched"><h3>算法枚举' +
+    '<span class="cnt">展开更多 · 共 ' + branches.length + ' 条</span></h3>' +
+    '<div class="searchwarn">下面这些组合由<b>算法枚举</b>得到，' +
+    '量纲上完全正确，但<b>尚未找到使用它们的现实物理式子</b>。' +
+    '如果你知道某个组合的真实出处，点它旁边的「补录」提交进来——' +
+    '核实通过后它会进入公式来源分支。</div>' +
+    rows + '</section>';
+}
+
+function renderMoreButton(e) {
+  if (!e.id || e.search_ran) return "";
+  return '<div class="morewrap">' +
+    '<button class="morebtn" data-qid="' + esc(e.id) + '" data-query="' +
+      esc(lastQuery) + '">展开更多（算法枚举同量纲组合）</button>' +
+    '<div class="searchmeta">有界搜索：限定原子数 ≤ 3、单单位幂次 ≤ 3、' +
+    '仅 SI 基本与导出单位。会漏掉某些数学上合法的组合，' +
+    '因此结果标注为「有界」。</div>' +
+    '</div>';
+}
+
+/* ============================================================
+   可折叠的「同类条目」列表
+   ============================================================
+   同量纲异构提示、以及分支下的「这也正是：」都用它。
+   初版只写了「一次性展开、不能收回」，而且展开时把分隔用的顿号留在了
+   原地导致重复（`A、B、还有 3 个 ⤵、C、D`）——这里统一处理：
+
+     - 内联显示前 max 个
+     - 其余折成「还有 N 个 ⤵ / 收起 ⤴」按钮，可来回切换
+     - 展开时移除按钮**前面**的顿号（那是连接按钮用的），
+       隐藏项自带前置顿号，所以不会出现重复标点
+*/
+const GROUP_INLINE_MAX = 3;
+// 每个折叠组的唯一序号，避免 DOM id/属性重复
+let GROUP_SEQ = 0;
+
+function renderGroup(items, opts) {
+  const o = opts || {};
+  const max = o.max === undefined ? GROUP_INLINE_MAX : o.max;
+  const sep = o.sep || "、";
+  const cls = o.cls || "groupmore";
+  const attr = o.attr || "data-group-more";
+  const key = o.key || "";
+
+  if (!items || !items.length) return "";
+  const render = o.render || (x => esc(String(x)));
+
+  const shown = items.slice(0, max);
+  const rest = items.slice(max);
+  const head = shown.map(render).join(sep);
+  if (!rest.length) return head;
+
+  /* DOM 顺序：可见项 → 省略号 → 隐藏项 → 按钮
+     ------------------------------------------------------------
+     两个结构要点，都是踩过坑改出来的：
+
+     1. 按钮必须在**最后**。初版把它放在隐藏项之前，展开后按钮就卡在
+        文字中间，读起来是「abc 收起 efg」——这是结构错误，不是样式问题。
+        现在展开后读作「A、B、C…D、E、F」，按钮单独一行落在末尾。
+
+     2. 省略号夹在可见项与隐藏项**之间**，且常驻。放在隐藏项之后的话
+        展开时会读成「…动能（E_k）势能（E_p）…」——两项直接粘住没有分隔。
+        放中间后：折叠态读作「A、B、C… 还有 6 个 ⤵」，
+        展开态读作「A、B、C…D、E、F」，两种状态都连贯通顺。 */
+  const ellipsis = '<span class="groupellip">…</span>';
+  const hidden = '<span class="grouprest" hidden>' +
+    rest.map(render).join(sep) + '</span>';
+  const btn = '<span class="' + cls + '" ' + attr + '="' + esc(key) + '">' +
+    '还有 ' + rest.length + ' 个 ⤵</span>';
+
+  return head + ellipsis + hidden + btn;
+}
+
+/* 折叠控件：展开 ⇄ 收起。
+
+   ⚠ 取容器不能只用 btn.parentElement —— 按钮是容器里的最后一个
+   子节点，直接用 closest 找到那个内容容器更稳。 */
+function toggleGroup(btn) {
+  const wrap = btn.closest(".homog, .points, .groupwrap, .glotable") ||
+               btn.parentElement;
+  if (!wrap) return;
+  const hiddenBox = wrap.querySelector(".grouprest");
+  if (!hiddenBox) return;
+
+  const expanding = hiddenBox.hidden;
+  hiddenBox.hidden = !expanding;
+  btn.classList.toggle("open", expanding);
+  if (expanding) {
+    btn.textContent = "收起 ⤴";
+  } else {
+    const total = hiddenBox.textContent
+      .split("、").map(s => s.trim()).filter(Boolean).length;
+    btn.textContent = "还有 " + total + " 个 ⤵";
+  }
+}
+
+/* 同量纲异构的列表本体（外壳由 renderHomogeneous 提供） */
+function renderHomogeneousList(list, dimSi) {
+  if (!list || !list.length) return "";
+  const mk = h => '<span class="jumplink" data-jump="' + esc(h.id) +
+    '" data-jump-label="' + esc(h.zh) + '">' +
+    esc(h.zh) + "（" + esc(h.symbol) + "·" + esc(h.domain_zh || h.category) +
+    "）</span>";
+
+  return '<div class="homog">' +
+    '<div class="t">同量纲异构（共 ' + list.length + ' 个）：' +
+      // 用默认的 data-group-more 属性，别自定义——
+      // 事件委托按 data-group-more 匹配，自定义属性会让按钮点不动。
+      renderGroup(list, { render: mk, key: dimSi }) +
+    '</div>' +
+    '<div class="d">量纲完全相同，但物理意义不同——' +
+    '这正是「量纲不足以判定物理量」的实例。点击名称可跳转。</div>' +
+  '</div>';
+}
+
+/* ============================================================
+   统一页面模板（页面规范 ../docs/2026-05-26-page-schema.md）
+   ============================================================
+   用户报告「不同量纲的页面内容实际并不统一（如有些量纲的常见写法下方
+   有描述，有些没有）」。根因不是样式，是**没有规范**：原先每个槽位都是
+   「有数据就渲染、没数据整段消失」，页面结构随数据完整度漂移。
+
+   现在每个槽位都无条件渲染，只有三种状态：
+     有内容   → 正常列出
+     不适用   → slotna，说明**为什么**本就没有（灰底）
+     暂缺     → slotmiss，带补录入口（虚线 + 按钮）
+   补录按钮的 data-sub-kind 决定它填哪个槽位。 */
+
+/* 一个槽位的通用外壳。state 为 "na" 或 "miss" 时用占位内容替换 body。 */
+function slot(opts) {
+  const o = opts;
+  const n = o.count === undefined ? 0 : o.count;
+  const empty = !o.body;
+  const cnt = o.cntText !== undefined
+    ? o.cntText
+    : (n ? esc(String(n)) + " 项" : "（空）");
+  const head = '<h3>' + esc(o.title) +
+    '<span class="cnt">' + (o.hint ? esc(o.hint) + ' · ' : '') + cnt + '</span>' +
+    (o.state ? '<span class="state">' +
+      esc(o.state === "na" ? "本条目不适用" : "尚未收录") + '</span>' : "") +
+    '</h3>';
+  return '<section class="' + (o.cls || "") + (empty ? " slotempty" : "") + '">' +
+    head + (o.body || "") + '</section>';
+}
+
+/* 「不适用」占位：必须说明理由，否则读者会以为是数据缺失 */
+function slotNa(text) {
+  return '<div class="slotna">' + esc(text) + '</div>';
+}
+
+/* 「暂缺」占位：必须带补录入口，否则用户无处可去 */
+function slotMiss(o) {
+  const who = o.qzh
+    ? '<span class="slotwho">' + esc(o.qzh) + '</span>' : "";
+  return '<div class="slotmiss">' +
+    '<span><span class="big">暂缺</span>：' + esc(o.what) + '</span>' + who +
+    '<button class="submitbtn" data-sub-kind="' + esc(o.kind) +
+      '" data-sub-qid="' + esc(o.qid || "") + '" data-sub-qzh="' + esc(o.qzh || "") +
+      '" data-sub-dim="' + esc(o.dim || "") + '" data-sub-expr="' +
+      esc(o.expr || "") + '" data-sub-slot="' + esc(o.slot || o.what) +
+    '">补录</button></div>';
+}
+
+function renderCommonForms(e) {
+  const list = e.unit_form_details && e.unit_form_details.length
+    ? e.unit_form_details
+    : (e.unit_forms || []).map(x => ({ expr: x, zh: "", note: "" }));
+  if (!list.length) {
+    // 匿名视图（这个量纲还没有登记物理量）：常见写法是**按量纲**记的，
+    // 没有条目就无处可挂，所以这里是「不适用」而不是「暂缺」——
+    // 给一个填不进去的补录按钮比不给更糟。
+    if (!e.id) {
+      return slot({
+        title: "常见写法", hint: "教科书与工程里的惯用写法", state: "na",
+        cntText: "该量纲尚未登记物理量",
+        body: slotNa("常见写法是挂在物理量条目上的，而这个量纲还没有对应的条目，" +
+          "所以没有可用的写法。"),
+      });
+    }
+    return slot({
+      title: "常见写法", hint: "教科书与工程里的惯用写法", state: "miss",
+      body: slotMiss({
+        what: "这个量的常见写法还没收录", kind: "unit_form",
+        qid: e.id, qzh: e.zh, slot: "常见写法",
+      }),
+    });
+  }
+  const rows = list.map(f =>
+    '<div class="formitem">' +
+      '<div class="fe">' + renderExpr(f.expr) + '</div>' +
+      '<div class="fz">' + (f.zh
+          ? esc(f.zh)
+          : '<span style="color:#b3aca0">（读法未生成）</span>') + '</div>' +
+      (f.note ? '<div class="fn">' + esc(f.note) + '</div>' : "") +
+    '</div>').join("");
+  return slot({
+    title: "常见写法", hint: "单位写法 + 中文读法", count: list.length,
+    cntText: list.length + " 种",
+    body: '<div class="formlist">' + rows + '</div>',
+  });
+}
+
+function renderDefinitions(e) {
+  const list = e.definitions || [];
+  if (list.length) {
+    const rows = list.map(f =>
+      '<div class="defrow">' +
+        '<div class="defeq">' + renderFormula(f.tex) + '</div>' +
+        '<div class="defnote">' + esc(f.definition_note || f.zh) + '</div>' +
+        (f.from_submission
+          ? '<div class="subnote">用户补录 · 编号 ' + esc(f.from_submission) +
+            '</div>'
+          : "") +
+        renderGlossary(f) +
+      '</div>').join("");
+    return slot({
+      title: "定义式", cls: "defs", hint: "这个量是怎么被定义出来的",
+      count: list.length, body: rows,
+    });
+  }
+  // 没有定义式分两种情况，必须区分——混为一谈会把「本来就不该有」
+  // 当成「工具有缺失」，用户就会去补一条物理上错误的定义式。
+  if (e.defined_as === "si-base" || e.defined_as === "umbrella") {
+    return slot({
+      title: "定义式", cls: "defs", hint: "这个量是怎么被定义出来的",
+      count: 0, state: "na", cntText: e.defined_as === "si-base"
+        ? "SI 基本量，没有定义式" : "总称量纲，没有唯一定义式",
+      body: slotNa(e.definition_note ||
+        (e.defined_as === "si-base"
+          ? "它是 SI 基本量，由基本单位定义，不由其他量推导。"
+          : "它是总称量纲，没有唯一的定义式。")),
+    });
+  }
+  return slot({
+    title: "定义式", cls: "defs", hint: "这个量是怎么被定义出来的",
+    count: 0, state: "miss", cntText: "尚未收录",
+    body: e.id
+      ? slotMiss({
+          what: "这个量的定义式还没收录", kind: "definition",
+          qid: e.id, qzh: e.zh, slot: "定义式",
+        })
+      : slotNa("定义式是挂在物理量条目上的，这个量纲还没有对应条目，"
+               + "所以没有可补的位置。（等它被登记为一个物理量之后才能补定义式。）"),
+  });
+}
+
+function renderEquivalent(e) {
+  const list = e.equivalent || [];
+  if (list.length) {
+    return slot({
+      title: "等价写法", hint: "同一个量换一种写法",
+      count: list.length, cntText: list.length + " 种",
+      body: list.map(renderBranch).join(""),
+    });
+  }
+  return slot({
+    title: "等价写法", hint: "同一个量换一种写法", state: "miss",
+    body: slotMiss({
+      what: "这个量纲的等价写法还没收录", kind: "formula",
+      qid: e.id, qzh: e.zh, dim: e.dim.si, slot: "等价写法",
+    }),
+  });
+}
+
+function renderGenerated(e) {
+  const list = e.generated || [];
+  if (list.length) {
+    const nd = list.filter(b => b.kind === "derivative").length;
+    const ni = list.filter(b => b.kind === "integral").length;
+    const nm = list.filter(b => b.kind === "matrix").length;
+    const bits = [];
+    if (nd) bits.push("求导 " + nd);
+    if (ni) bits.push("积分 " + ni);
+    if (nm) bits.push("矩阵 " + nm);
+    return slot({
+      title: "由物理式子生成", hint: "量纲发生变化 · " + bits.join(" / "),
+      count: list.length, cntText: list.length + " 条",
+      body: list.map(renderBranch).join(""),
+    });
+  }
+  return slot({
+    title: "由物理式子生成", hint: "量纲发生变化", state: "na",
+    cntText: "没有已知过程",
+    body: slotNa("已知的求导 / 积分 / 矩阵运算里，没有哪一个的结果量纲" +
+      "正好是这个量纲。这不代表它不能被生成，只代表工具收录的公式里没有。"),
+  });
+}
+
+function renderHomogeneous(e) {
+  const list = e.homogeneous || [];
+  if (list.length) {
+    return slot({
+      title: "同量纲异构", hint: "量纲相同、物理意义不同",
+      count: list.length, cntText: list.length + " 个",
+      body: renderHomogeneousList(list, e.dim.si),
+    });
+  }
+  return slot({
+    title: "同量纲异构", hint: "量纲相同、物理意义不同", state: "na",
+    cntText: "该量纲下只有它一个",
+    body: slotNa("这个量纲下没有登记其他物理量，所以看不到「同量纲不同义」的对比。" +
+      "换一个更常见的量纲（例如力矩、能量）就能看到。"),
+  });
+}
+
+function renderEntity(e, idx) {
+  const struct = (e.structure && e.structure !== "scalar")
+      ? '<span class="struct">' + esc(e.structure) + '</span>' : "";
+  const cat = e.category ? '<span class="cat">' + esc(e.category) + '</span>' : "";
+  const sym = e.symbol ? '<span class="sym">' + esc(e.symbol) + '</span>' : "";
+  const dom = e.domain_zh
+    ? '<span class="cat">' + esc(e.domain_zh) + '</span>' : "";
+
+  // 说明槽位：缺失时同样留位并给补录入口（页面规范 §2 第 4 项）
+  const note = e.note
+    ? '<div class="note">' + esc(e.note) + '</div>'
+    : (e.id
+        ? '<div class="note" style="color:#a49c90">' +
+          '<span class="big">暂缺</span>：这个量的一句话描述还没写。' +
+          '<button class="submitbtn" data-sub-kind="note" data-sub-qid="' +
+            esc(e.id) + '" data-sub-qzh="' + esc(e.zh) +
+            '" data-sub-slot="条目说明">补录</button></div>'
+        : '<div class="note" style="color:#a49c90">这个量纲还没有登记的物理量条目，'
+          + '所以这里没有说明可显示。</div>');
+
+  let subs = "";
+  if (e.submitted && e.submitted.length) {
+    subs += slot({
+      title: "用户补录（已核实）", hint: "由使用者提供并经核实",
+      count: e.submitted.length, cntText: e.submitted.length + " 条",
+      body: e.submitted.map(renderBranch).join(""),
+    });
+  }
+  if (e.disputed && e.disputed.length) {
+    subs += slot({
+      title: "用户补录（存疑）", cls: "searched",
+      hint: "保留原文供参考，不计入可靠依据",
+      count: e.disputed.length, cntText: e.disputed.length + " 条",
+      body: '<div class="searchwarn">这些提交<b>未能核实为真实存在的物理式子</b>。' +
+        '按约定不删除提交内容，只标注存疑——请勿把它们当作可靠依据。</div>' +
+        e.disputed.map(renderBranch).join(""),
+    });
+  }
+
+  const searched = e.search_ran ? renderSearchSection(e, e.searched || []) : "";
+
+  return '<div class="card" data-qid="' + esc(e.id) + '">' +
+    '<div class="head">' +
+      '<div class="titleline"><span class="zh">' + esc(e.zh) + '</span>' +
+        sym + struct + cat + dom + '</div>' +
+      '<div class="dimrow">' +
+        '<span class="dimbox">' + renderExpr(e.dim.si) + '</span>' +
+        '<span class="dimzh">' + esc(e.dim.zh) + '</span>' +
+      '</div>' +
+      note +
+    '</div>' +
+    renderCommonForms(e) +
+    renderHomogeneous(e) +
+    renderDefinitions(e) +
+    renderEquivalent(e) +
+    renderGenerated(e) +
+    subs + searched + renderMoreButton(e) +
+    renderFormulas(e.formulas || []) +
+    '</div>';
+}
+
+/* ============================================================
+   交互
+   ============================================================ */
+const out = document.getElementById("out");
+const input = document.getElementById("q");
+const depthSel = document.getElementById("depth");
+
+let META = null;
+let lastQuery = "";
+let lastData = null;   // 保留上一次结果，供「展开更多」就地替换
+
+function showError(msg) {
+  out.innerHTML = '<div class="err"><b>查不到这个名称。</b><br>' + esc(msg) +
+    '<br><br>可以试试：中文名（牛）、单位符号（N）、组合式（N/C），' +
+    '或者从上面的示例里挑一个。</div>';
+}
+
+function paint(data) {
+  // 有查询结果时隐藏首页浏览，避免两套内容同时占屏
+  const home = document.getElementById("home");
+  if (home) home.hidden = true;
+  const sugs = data.suggestions || [];
+  const cards = data.entities.map((e, i) => {
+    // 给每张卡片一个锚点，供侧边目录跳转
+    return renderEntity(e, i).replace(
+      '<div class="card"',
+      '<div id="ent-' + i + '" class="card"');
+  }).join("");
+  const parts = [];
+  // 候选列表放在最前（用户建议：搜索栏下方列出可能的结果）
+  if (sugs.length) parts.push(renderSuggestions(data.query, sugs));
+  parts.push(cards);
+  if (data.entities.length > 1) parts.push(renderToc(data.entities));
+  parts.push(legend());
+  out.innerHTML = parts.join("");
+  updateTocActive();
+}
+
+/* ============================================================
+   首页分类浏览
+   ============================================================
+   用户要求：不搜索也能到达每一个词条。
+   所以首页按领域列出全部物理量，并且必须与 registry 的条目总数一致
+   （完整性由引擎自检 + /api/browse 的 complete 字段双重保证）。
+*/
+async function loadBrowse() {
+  const box = document.getElementById("home");
+  if (!box) return;
+  try {
+    const r = await fetch("/api/browse");
+    const d = await r.json();
+    const groups = d.groups || [];
+    const cards = groups.map(g => {
+      const items = g.items.length
+        ? g.items.map(q =>
+            '<span class="domitem" data-jump="' + esc(q.id) +
+              '" data-jump-label="' + esc(q.zh) + '" title="' +
+              esc(q.zh + "　" + q.dim_zh +
+                  (q.unit_forms.length ? "　" + q.unit_forms.join(" / ") : "")) +
+            '">' + esc(q.zh) +
+              (q.symbol ? '<span class="sym">' + esc(q.symbol) + '</span>' : '') +
+            '</span>').join("")
+        : '<span class="domempty">这个领域还没有收录词条</span>';
+      return '<div class="domcard">' +
+        '<div class="dh"><span class="zh">' + esc(g.zh) + '</span>' +
+          '<span class="en">' + esc(g.en) + '</span>' +
+          '<span class="n">' + g.count + '</span></div>' +
+        '<div class="dd">' + esc(g.desc) + '</div>' +
+        '<div class="domlist">' + items + '</div>' +
+      '</div>';
+    }).join("");
+
+    const all = (d.complete ? "" : "⚠ 有词条未归类：")
+      + "共 " + d.total_indexed + " 个词条";
+    box.innerHTML =
+      '<div class="browsehead">' +
+        '<h2>按领域浏览</h2>' +
+        '<span class="note">点击任意词条进入它的页面，不需要搜索</span>' +
+        '<span class="cnt">' + all + '</span>' +
+      '</div>' +
+      '<div class="domgrid">' + cards + '</div>';
+  } catch (e) {
+    box.innerHTML = '<div class="err">分类浏览加载失败：' + esc(e.message) +
+      '</div>';
+  }
+}
+
+function showBrowse() {
+  const box = document.getElementById("home");
+  if (!box) return;
+  if (!box.innerHTML.trim()) loadBrowse();
+  box.hidden = false;
+  out.innerHTML = "";
+  const toc = document.getElementById("toc");
+  if (toc) toc.remove();
+}
+
+/* 搜索候选：单字母/歧义输入时列出可能的结果，让用户自己选。
+   比猜一个更诚实——`I` 同时是电流、冲量、转动惯量的符号。 */
+function renderSuggestions(query, sugs) {
+  const rows = sugs.map(s =>
+    '<div class="sugrow" data-jump="' + esc(s.id) +
+      '" data-jump-label="' + esc(s.zh) + '">' +
+      '<div class="sz">' + esc(s.zh) + '</div>' +
+      '<div class="ss">' + esc(s.symbol) + '</div>' +
+      '<div class="sd"><span class="dim">' + renderExpr(s.dim_si) + '</span>' +
+        (s.unit_forms ? '　' + esc(s.unit_forms) : '') +
+        (s.note ? '<br>' + esc(s.note) : '') +
+      '</div>' +
+    '</div>').join("");
+  return '<div class="sugpanel">' +
+    '<div class="head">「<b>' + esc(query) + '</b>」有 ' + sugs.length +
+      ' 个可能的结果，点击查看：</div>' +
+    '<div class="suglist">' + rows + '</div>' +
+  '</div>';
+}
+
+/* 页面跳转目录：固定在右侧、垂直居中。
+   外面包一层 #tocwrap 做 flex 居中——这样 #toc 自身高度变化时
+   其中点位置恒定，不会因为条目拉长而上下弹跳。 */
+function renderToc(entities) {
+  const items = entities.map((e, i) => {
+    const desc = [e.symbol, e.dim.si, e.domain_zh || e.category]
+      .filter(Boolean).join(" · ");
+    return '<a href="#ent-' + i + '" data-toc="' + i + '" title="' +
+      esc((i + 1) + ". " + e.zh + "　" + desc) + '">' +
+      '<span class="toczh">' + esc(e.zh) + '</span>' +
+      '<span class="tocdesc">' + esc(desc) + '</span>' +
+    '</a>';
+  }).join("");
+  return '<div id="tocwrap"><nav id="toc">' +
+    '<div class="tochead">本页 ' + entities.length + ' 个条目</div>' +
+    items + '</nav></div>';
+}
+
+/* 定义式区块外壳由 renderDefinitions(e) 提供 */
+
+/* ============================================================
+   导航：浏览器前进 / 后退
+   ============================================================
+   用户报告「页面当前还不支持前进和后退功能」。原先只有 setHash，
+   而且用的是 replaceState —— 那是**故意**避开历史记录的写法，
+   于是每次查询都把上一条覆盖掉，后退键什么也退不回去。
+
+   现在的模型：每次导航 pushState 一条 {q} 或 {home:true}，
+   popstate 时按 state 复原。hash 仍然写（#q=牛），因为它是
+   刷新、收藏、分享的唯一载体；但**只由 pushState/replaceState 更新**，
+   不再监听 hashchange —— 同时监听会导致一次后退触发两遍渲染
+   （pushState 改 hash 不触发 hashchange，但浏览器的后退会两者都触发）。 */
+function urlFor(q) {
+  return location.pathname + location.search +
+    (q ? "#q=" + encodeURIComponent(q) : "");
+}
+
+function queryFromHash() {
+  const h = location.hash || "";
+  const m = h.match(/^#q=(.*)$/);
+  return m ? decodeURIComponent(m[1]) : "";
+}
+
+function pushNav(q) {
+  const state = q ? { q: q } : { home: true };
+  history.pushState(state, "", urlFor(q));
+}
+
+function replaceNav(q) {
+  const state = q ? { q: q } : { home: true };
+  history.replaceState(state, "", urlFor(q));
+}
+
+async function search(query, opts) {
+  const o = opts || {};
+  const q = (query !== undefined ? query : input.value).trim();
+  if (!q) return;
+  input.value = q;
+  lastQuery = q;
+  acClose();
+  const depth = depthSel.value;
+  if (!o.silent) out.innerHTML = '<div class="hint">正在展开「' + esc(q) + '」…</div>';
+  try {
+    const r = await fetch("/api/search?q=" + encodeURIComponent(q) +
+                          "&depth=" + encodeURIComponent(depth));
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const data = await r.json();
+    if (data.error) { showError(data.error); return; }
+    // 「只有候选、没有实体」也是一种正常结果（matched_kind=suggestion）：
+    // 例如输入「势」会给出电势/势能/弹性势能等多个候选。此时必须照常
+    // 渲染候选面板，不能当成「查不到」——这是修过的一个漏洞。
+    const hasSugs = (data.suggestions || []).length > 0;
+    if ((!data.entities || !data.entities.length) && !hasSugs) {
+      showError("没有登记该量纲的物理量。");
+      return;
+    }
+    lastData = data;
+    paint(data);
+    // 浏览器历史：只有**真的换了一个查询**才 push。
+    // 否则点同一个词条两次会塞两条一模一样的历史，后退要按两下。
+    if (!o.fromPop && q !== o.prevQuery) pushNav(q);
+    // label 只在首次查询时给出并写入；点历史行重查时沿用原 label，
+    // 否则 histPush 会把已有的中文标签覆盖成 undefined（修过的 bug）。
+    if (!o.noHistory) histPush(q, o.label);
+    refreshPendingBadge();
+  } catch (e) {
+    showError("请求失败：" + e.message);
+  }
+}
+
+/* 「展开更多」：按需跑有界搜索，就地把结果插进对应卡片。
+   刻意不在初始查询里跑——搜索有成本，而且设计上它是
+   「限定之外的补充」，不该默认出现在主体内容里。 */
+async function expandSearch(btn) {
+  const q = btn.dataset.query;
+  const qid = btn.dataset.qid;
+  if (!q) return;
+  const original = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "正在搜索…";
+  try {
+    const r = await fetch("/api/search?search=1&depth=" +
+                          encodeURIComponent(depthSel.value) +
+                          "&q=" + encodeURIComponent(q));
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const data = await r.json();
+    const ent = (data.entities || []).find(e => e.id === qid);
+    if (!ent) { btn.textContent = "没找到对应条目"; return; }
+
+    const card = btn.closest(".card");
+    const wrap = btn.closest(".morewrap");
+    const holder = document.createElement("div");
+    holder.innerHTML = renderSearchSection(ent, ent.searched || []);
+    card.insertBefore(holder.firstChild, wrap);
+    wrap.remove();
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = original + "（失败：" + e.message + "）";
+  }
+}
+
+/* 跳转到某个物理量的页面（符号表、候选列表、同量纲异构提示里都会用）。
+
+   label 是**用户点击时的文本**（如「力」「电势能」）。历史记录显示它，
+   而不是跳转目标的 id —— 用户点「力」跳到 id=force 的页面，
+   历史里显示「力」才符合他的认知（用户明确提过这一点）。 */
+function jumpTo(qid, label) {
+  if (!qid) return;
+  search(qid, { label: label });
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// 事件委托：按钮、链接都是动态插入的，不能直接绑定
+/* 统一的点击委托。挂在 document 上而不是 #out —— 因为首页分类浏览
+   与联想面板都位于 #out 之外（它们与查询结果互斥显示），
+   挂 #out 会漏掉它们里面的点击。 */
+function onDelegatedClick(ev) {
+  // ---- 联想面板 ----
+  const hclr = ev.target.closest("[data-hclear]");
+  if (hclr) { histSave([]); acClose(); return; }
+  const hshow = ev.target.closest("[data-hshow]");
+  if (hshow) { acShowHistory(); return; }
+  const hdel = ev.target.closest("[data-hdel]");
+  if (hdel) { ev.stopPropagation(); histRemove(hdel.dataset.hdel); return; }
+  const hrow = ev.target.closest("[data-hq]");
+  if (hrow) {
+    search(hrow.dataset.hq, { label: hrow.dataset.hlabel });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    return;
+  }
+  // 面板里的候选行：跳到该物理量
+  if (ev.target.closest("#ac")) {
+    const arow = ev.target.closest("[data-jump]");
+    if (arow) {
+      jumpTo(arow.dataset.jump, arow.dataset.jumpLabel);
+      return;
+    }
+    return;   // 面板内的其它点击不外泄到下面的通用处理
+  }
+  // 点击面板之外 → 收起联想面板
+  if (!ev.target.closest("#searchbox")) acClose();
+
+  const more = ev.target.closest(".morebtn");
+  if (more) { expandSearch(more); return; }
+
+  const jump = ev.target.closest("[data-jump]");
+  if (jump) {
+    jumpTo(jump.dataset.jump, jump.dataset.jumpLabel);
+    return;
+  }
+
+  const sub = ev.target.closest(".submitbtn");
+  if (sub) {
+    ev.stopPropagation();
+    openSubmitModal({
+      kind: sub.dataset.subKind || "formula",
+      query: lastQuery,
+      qid: sub.dataset.subQid || "",
+      qzh: sub.dataset.subQzh || "",
+      dim: sub.dataset.subDim || (lastData && lastData.entities &&
+        lastData.entities[0] ? lastData.entities[0].dim.si : ""),
+      expr: sub.dataset.subExpr || "",
+      zh: "",
+      slot: sub.dataset.subSlot || "",
+    });
+    return;
+  }
+
+  // 「还有 N 个 ⇄ 收起」：同量纲异构与「这也正是」共用同一个处理
+  const grp = ev.target.closest("[data-group-more]");
+  if (grp) { toggleGroup(grp); return; }
+
+  const glo = ev.target.closest(".glostoggle");
+  if (glo) {
+    // 在**自己的父容器**里找表格，而不是 document.getElementById——
+    // 后者在有同名 id 时会取到别的卡片的表格（见 renderGlossary 的说明）
+    const box = glo.parentElement.querySelector(".glotable");
+    if (box) {
+      box.hidden = !box.hidden;
+      const rows = box.querySelectorAll(".glorow").length;
+      glo.textContent = (box.hidden ? "▸ 展开" : "▾ 收起") +
+        "符号说明（" + rows + " 个字母）";
+    }
+    return;
+  }
+
+  const toc = ev.target.closest("#toc a");
+  if (toc) {
+    ev.preventDefault();
+    const el = document.getElementById("ent-" + toc.dataset.toc);
+    if (el) {
+      const y = el.getBoundingClientRect().top + window.scrollY - 150;
+      window.scrollTo({ top: y, behavior: "smooth" });
+    }
+    return;
+  }
+
+  const chip = ev.target.closest(".chip");
+  if (chip) { search(chip.dataset.q); return; }
+}
+document.addEventListener("click", onDelegatedClick);
+
+/* 联想面板用 mousedown + preventDefault 接管：
+   否则点击面板会让输入框先失焦，面板在 click 之前就被关掉了。 */
+acEl.addEventListener("mousedown", ev => { ev.preventDefault(); });
+
+function updateTocActive() {
+  const links = document.querySelectorAll("#toc a");
+  if (!links.length) return;
+  let current = 0;
+  links.forEach((a, i) => {
+    const el = document.getElementById("ent-" + a.dataset.toc);
+    if (el && el.getBoundingClientRect().top <= 190) current = i;
+  });
+  links.forEach((a, i) =>
+    a.classList.toggle("active", i === current));
+}
+
+window.addEventListener("scroll", () => {
+  if (window.__tocTick) return;
+  window.__tocTick = true;
+  requestAnimationFrame(() => {
+    window.__tocTick = false;
+    updateTocActive();
+  });
+}, { passive: true });
+
+document.getElementById("go").addEventListener("click", () => search());
+
+input.addEventListener("input", acOnInput);
+input.addEventListener("focus", () => {
+  if (!input.value.trim()) acShowHistory();
+  else acShowSuggest(input.value.trim());
+});
+input.addEventListener("keydown", e => {
+  if (e.key === "ArrowDown") { if (acMove(1)) e.preventDefault(); return; }
+  if (e.key === "ArrowUp") { if (acMove(-1)) e.preventDefault(); return; }
+  if (e.key === "Escape") { acClose(); return; }
+  if (e.key === "Enter") {
+    // 有高亮候选就采用它；否则按用户输入的原文查询（组合式求值走这条）
+    if (acAcceptActive()) { e.preventDefault(); return; }
+    acClose();
+    search();
+  }
+});
+
+depthSel.addEventListener("change", () => {
+  updateDepthHint();
+  if (input.value.trim()) search(input.value.trim(), { fromPop: true });
+});
+
+/* 浏览器前进后退：popstate 是唯一的入口。
+   state 里带着 q；刷新后 state 会丢，所以退回到 hash 兜底。 */
+window.addEventListener("popstate", ev => {
+  acClose();
+  const st = ev.state;
+  const q = (st && st.q) ? st.q : (st && st.home ? "" : queryFromHash());
+  if (q) {
+    input.value = q;
+    search(q, { noHistory: true, fromPop: true, prevQuery: lastQuery });
+  } else {
+    input.value = "";
+    lastQuery = "";
+    showBrowse();
+  }
+});
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") { closeModal(); acClose(); }
+  // Ctrl/Cmd+K 聚焦搜索框
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+    e.preventDefault();
+    input.focus();
+    input.select();
+    acShowHistory();
+  }
+});
+
+async function loadMeta() {
+  try {
+    const r = await fetch("/api/meta");
+    META = await r.json();
+    const box = document.getElementById("examples");
+    box.innerHTML = '<span class="lbl">示例：</span>' +
+      META.examples.map(e =>
+        '<span class="chip" data-q="' + esc(e.q) + '" title="' + esc(e.why) + '">' +
+        esc(e.q) + '</span>').join("");
+    refreshPendingBadge();
+  } catch (e) { /* 元信息失败不影响主功能 */ }
+}
+
+// 角标是固定元素，事件在启动时绑定一次即可
+document.getElementById("pendingbadge").addEventListener("click", openSubmissionList);
+
+/* 初始状态：有 hash 就查它，否则显示首页分类浏览。
+   用 replaceState 而不是 pushState：落地那一条不该再压一条历史，
+   否则用户一进来按后退会退到一个空白页。 */
+const initial = queryFromHash();
+if (initial) {
+  input.value = initial;
+  replaceNav(initial);
+  search(initial, { noHistory: true, fromPop: true });
+} else {
+  replaceNav("");
+  showBrowse();
+}
+
+// 点标题回到首页浏览
+const brand = document.querySelector(".brand h1");
+if (brand) {
+  brand.style.cursor = "pointer";
+  brand.title = "回到按领域浏览";
+  brand.addEventListener("click", () => {
+    input.value = "";
+    lastQuery = "";
+    pushNav("");
+    showBrowse();
+  });
+}
+
+/* 层数选择器的说明：原标签只写「展开」，用户不知道它控制什么。
+   改成「分支展开」，并在旁边实时显示该层数的实际含义（悬停也有完整说明）。 */
+const DEPTH_TEXT = {
+  0: "只看这个量本身，不展开任何分支",
+  1: "展开等价写法与由公式生成的关系，但不再往下",
+  2: "在 1 层基础上，把分支指向的量也展开一层",
+  3: "最多三层，内容可能较长",
+};
+
+function updateDepthHint() {
+  const v = Number(depthSel.value);
+  const t = DEPTH_TEXT[v] || "";
+  const hint = document.getElementById("depthhint");
+  if (hint) hint.textContent = t;
+  const full = "分支展开层数：单位组合树往下展开几层。" +
+    "当前 " + v + " 层 —— " + t;
+  depthSel.title = full;
+  const ctl = document.getElementById("depthctl");
+  if (ctl) ctl.title = full;
+}
+updateDepthHint();
+
+function legend() {
+  if (!META) return "";
+  const order = ["equivalence", "derivative", "integral", "matrix", "search"];
+  const rows = order.filter(k => META.edge_kinds[k]).map(k => {
+    const v = META.edge_kinds[k];
+    return '<div class="row">' +
+      '<span class="m" style="color:var(--' +
+        (k === "equivalence" ? "eq" : k === "derivative" ? "deriv"
+         : k === "integral" ? "integ" : k === "matrix" ? "matrix" : "search") +
+      ')">' + (MARKS[k] || "·") + '</span>' +
+      '<span class="nm">' + esc(v.label) + '</span>' +
+      '<span class="ex">' + esc(v.explain) + '</span></div>';
+  }).join("");
+  const c = META.counts;
+  const py = META.pinyin && META.pinyin.enabled
+    ? "联想支持拼音（" + META.pinyin.chars + " 个字的读音表）。" : "";
+  return '<div class="legend"><h4>边的类型</h4>' + rows +
+    '<div class="stats">当前数据：单位 ' + c.units + ' · 物理量 ' + c.quantities +
+    ' · 公式 ' + c.formulas + ' · 代数规则 ' + c.algebra_rules +
+    ' · 形状模式 ' + c.patterns + ' · 已建立索引的量纲 ' + c.dims_indexed +
+    ' 种。所有关系均由引擎现算，启动时已通过量纲齐次性自检。' + py + '</div></div>';
+}
+
+loadMeta();
+</script>
+</body>
+</html>

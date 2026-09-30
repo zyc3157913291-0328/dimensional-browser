@@ -1,0 +1,3169 @@
+{
+  "kind": "formulas",
+  "note": "公式库 —— 一等公民。树的边优先从这里来。每条 signature 的量纲必须齐次（lhs 量纲 == rhs 按 ops 推导的量纲），由 registry 启动自检强制校验。relations 声明该公式产生的量纲关系边，kind 区分等价重写与泛函生成。",
+  "formulas": [
+    {
+      "id": "newton_second_law",
+      "tex": "F = m·a",
+      "zh": "牛顿第二定律",
+      "category": "力学",
+      "pattern": "product",
+      "signature": {
+        "lhs": {
+          "symbol": "F",
+          "dim": {
+            "M": 1,
+            "L": 1,
+            "T": -2
+          },
+          "structure": "vector"
+        },
+        "rhs": [
+          {
+            "symbol": "m",
+            "dim": {
+              "M": 1
+            }
+          },
+          {
+            "symbol": "a",
+            "dim": {
+              "L": 1,
+              "T": -2
+            },
+            "structure": "vector"
+          }
+        ],
+        "ops": [
+          "mul"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "equivalence",
+          "from": "N",
+          "to": "kg·m/s^2",
+          "via": "F = m·a",
+          "note": "牛是导出单位，按定义展开为基本单位组合：力 = 质量 × 加速度"
+        }
+      ],
+      "defines": "force"
+    },
+    {
+      "id": "force_from_potential_gradient",
+      "tex": "F = -dU/dx",
+      "zh": "力等于势能对位移的负导数",
+      "category": "力学",
+      "pattern": "gradient",
+      "signature": {
+        "lhs": {
+          "symbol": "F",
+          "dim": {
+            "M": 1,
+            "L": 1,
+            "T": -2
+          },
+          "structure": "vector"
+        },
+        "rhs": [
+          {
+            "symbol": "U",
+            "dim": {
+              "M": 1,
+              "L": 2,
+              "T": -2
+            },
+            "role": "operand"
+          },
+          {
+            "symbol": "x",
+            "dim": {
+              "L": 1
+            },
+            "role": "differentiator",
+            "order": 1
+          }
+        ],
+        "ops": [
+          "neg",
+          "derivative"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "derivative",
+          "from": "J",
+          "wrt": "x",
+          "to": "N",
+          "via": "F = -dU/dx",
+          "note": "能量对长度求导：量纲减去一阶长度，得力的量纲。这是「能量沿位移的变化率具有力的量纲」这句话的严格形式"
+        }
+      ]
+    },
+    {
+      "id": "force_as_momentum_rate",
+      "tex": "F = dp/dt",
+      "zh": "力等于动量变化率",
+      "category": "力学",
+      "pattern": "gradient",
+      "signature": {
+        "lhs": {
+          "symbol": "F",
+          "dim": {
+            "M": 1,
+            "L": 1,
+            "T": -2
+          },
+          "structure": "vector"
+        },
+        "rhs": [
+          {
+            "symbol": "p",
+            "dim": {
+              "M": 1,
+              "L": 1,
+              "T": -1
+            },
+            "role": "operand",
+            "structure": "vector"
+          },
+          {
+            "symbol": "t",
+            "dim": {
+              "T": 1
+            },
+            "role": "differentiator",
+            "order": 1
+          }
+        ],
+        "ops": [
+          "derivative"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "derivative",
+          "from": "kg·m/s",
+          "wrt": "s",
+          "to": "N",
+          "via": "F = dp/dt",
+          "note": "动量对时间求导得力的量纲（牛顿第二定律的原始形式）"
+        }
+      ]
+    },
+    {
+      "id": "kinetic_energy",
+      "tex": "E_k = (1/2)·m·v^2",
+      "zh": "动能",
+      "category": "力学",
+      "pattern": "product",
+      "signature": {
+        "lhs": {
+          "symbol": "E_k",
+          "dim": {
+            "M": 1,
+            "L": 2,
+            "T": -2
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "m",
+            "dim": {
+              "M": 1
+            }
+          },
+          {
+            "symbol": "v",
+            "dim": {
+              "L": 1,
+              "T": -1
+            },
+            "exp": 2,
+            "structure": "vector"
+          }
+        ],
+        "ops": [
+          "mul",
+          "pow"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "equivalence",
+          "from": "J",
+          "to": "kg·m^2/s^2",
+          "via": "E_k = (1/2)·m·v^2",
+          "note": "能量 = 质量 × 速度平方。系数 1/2 无量纲，不影响量纲"
+        }
+      ],
+      "defines": "kinetic_energy"
+    },
+    {
+      "id": "gravitational_potential_energy",
+      "tex": "E_p = m·g·h",
+      "zh": "重力势能",
+      "category": "力学",
+      "pattern": "product",
+      "signature": {
+        "lhs": {
+          "symbol": "E_p",
+          "dim": {
+            "M": 1,
+            "L": 2,
+            "T": -2
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "m",
+            "dim": {
+              "M": 1
+            }
+          },
+          {
+            "symbol": "g",
+            "dim": {
+              "L": 1,
+              "T": -2
+            }
+          },
+          {
+            "symbol": "h",
+            "dim": {
+              "L": 1
+            }
+          }
+        ],
+        "ops": [
+          "mul"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "equivalence",
+          "from": "J",
+          "to": "N·m",
+          "via": "E_p = m·g·h",
+          "note": "能量 = 力 × 位移的另一种体现"
+        }
+      ],
+      "defines": "potential_energy"
+    },
+    {
+      "id": "spring_potential_energy",
+      "tex": "E_s = (1/2)·k·x^2",
+      "zh": "弹性势能",
+      "category": "力学",
+      "pattern": "product",
+      "signature": {
+        "lhs": {
+          "symbol": "E_s",
+          "dim": {
+            "M": 1,
+            "L": 2,
+            "T": -2
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "k",
+            "dim": {
+              "M": 1,
+              "T": -2
+            }
+          },
+          {
+            "symbol": "x",
+            "dim": {
+              "L": 1
+            },
+            "exp": 2
+          }
+        ],
+        "ops": [
+          "mul",
+          "pow"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "equivalence",
+          "from": "J",
+          "to": "N·m",
+          "via": "E_s = (1/2)·k·x^2",
+          "note": "弹簧刚度 N/m 乘以长度平方得能量量纲，即 N·m"
+        }
+      ],
+      "defines": "elastic_potential_energy"
+    },
+    {
+      "id": "power_from_work",
+      "tex": "P = dW/dt",
+      "zh": "功率等于功的变化率",
+      "category": "力学",
+      "pattern": "gradient",
+      "signature": {
+        "lhs": {
+          "symbol": "P",
+          "dim": {
+            "M": 1,
+            "L": 2,
+            "T": -3
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "W",
+            "dim": {
+              "M": 1,
+              "L": 2,
+              "T": -2
+            },
+            "role": "operand"
+          },
+          {
+            "symbol": "t",
+            "dim": {
+              "T": 1
+            },
+            "role": "differentiator",
+            "order": 1
+          }
+        ],
+        "ops": [
+          "derivative"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "derivative",
+          "from": "J",
+          "wrt": "s",
+          "to": "W",
+          "via": "P = dW/dt",
+          "note": "功对时间求导：量纲减去一阶时间，得功率量纲"
+        },
+        {
+          "kind": "equivalence",
+          "from": "W",
+          "to": "J/s",
+          "via": "P = dW/dt",
+          "note": "瓦 = 焦每秒"
+        }
+      ]
+    },
+    {
+      "id": "power_from_force_velocity",
+      "tex": "P = F·v",
+      "zh": "功率等于力与速度的点积",
+      "category": "力学",
+      "pattern": "product",
+      "signature": {
+        "lhs": {
+          "symbol": "P",
+          "dim": {
+            "M": 1,
+            "L": 2,
+            "T": -3
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "F",
+            "dim": {
+              "M": 1,
+              "L": 1,
+              "T": -2
+            },
+            "structure": "vector"
+          },
+          {
+            "symbol": "v",
+            "dim": {
+              "L": 1,
+              "T": -1
+            },
+            "structure": "vector"
+          }
+        ],
+        "ops": [
+          "mul"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "equivalence",
+          "from": "W",
+          "to": "N·m/s",
+          "via": "P = F·v",
+          "note": "功率 = 力 × 速度（标量积）"
+        }
+      ]
+    },
+    {
+      "id": "work_from_force",
+      "tex": "W = F·s",
+      "zh": "功等于力与位移的标量积",
+      "category": "力学",
+      "pattern": "product",
+      "signature": {
+        "lhs": {
+          "symbol": "W_work",
+          "dim": {
+            "M": 1,
+            "L": 2,
+            "T": -2
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "F",
+            "dim": {
+              "M": 1,
+              "L": 1,
+              "T": -2
+            },
+            "structure": "vector"
+          },
+          {
+            "symbol": "s",
+            "dim": {
+              "L": 1
+            },
+            "structure": "vector"
+          }
+        ],
+        "ops": [
+          "mul"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "equivalence",
+          "from": "J",
+          "to": "N·m",
+          "via": "W = F·s",
+          "note": "功 = 力 × 位移。注意：力矩也是 N·m，量纲相同但物理意义不同（力矩是叉积，转动效果）"
+        }
+      ],
+      "defines": "work"
+    },
+    {
+      "id": "rotation_work",
+      "tex": "W_rot = M·theta",
+      "zh": "转动功等于力矩与角位移的乘积",
+      "category": "力学",
+      "pattern": "product",
+      "signature": {
+        "lhs": {
+          "symbol": "W_rot",
+          "dim": {
+            "M": 1,
+            "L": 2,
+            "T": -2
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "M",
+            "dim": {
+              "M": 1,
+              "L": 2,
+              "T": -2
+            }
+          },
+          {
+            "symbol": "theta",
+            "dim": {}
+          }
+        ],
+        "ops": [
+          "mul"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "equivalence",
+          "from": "N·m/rad",
+          "to": "J/rad",
+          "via": "W_rot = M·θ",
+          "note": "力矩单位 N·m/rad 与 J/rad 量纲相同。乘以角位移后 rad 标记相消，功回到纯能量的 M·L²·T⁻²——这正是「转动功与平动功汇合到同一个焦耳」的量纲表述"
+        },
+        {
+          "kind": "equivalence",
+          "from": "J",
+          "to": "N·m",
+          "via": "W_rot = M·θ",
+          "note": "角功的量纲最终就是能量的量纲，与 W = F·s 落在同一处"
+        }
+      ]
+    },
+    {
+      "id": "torque_from_angular_momentum",
+      "tex": "M = dL/dt",
+      "zh": "力矩等于角动量变化率",
+      "category": "力学",
+      "pattern": "gradient",
+      "signature": {
+        "lhs": {
+          "symbol": "M",
+          "dim": {
+            "M": 1,
+            "L": 2,
+            "T": -2
+          },
+          "structure": "vector"
+        },
+        "rhs": [
+          {
+            "symbol": "L",
+            "dim": {
+              "M": 1,
+              "L": 2,
+              "T": -1
+            },
+            "role": "operand",
+            "structure": "vector"
+          },
+          {
+            "symbol": "t",
+            "dim": {
+              "T": 1
+            },
+            "role": "differentiator",
+            "order": 1
+          }
+        ],
+        "ops": [
+          "derivative"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "derivative",
+          "from": "kg·m^2·rad/s",
+          "wrt": "s",
+          "to": "N·m/rad",
+          "via": "M = dL/dt",
+          "note": "角动量对时间求导得力矩：量的量纲减去一阶时间，rad 标记保留"
+        },
+        {
+          "kind": "equivalence",
+          "from": "N·m/rad",
+          "to": "kg·m^2·rad/s^2",
+          "via": "M = dL/dt",
+          "note": "力矩的两种等价写法"
+        }
+      ]
+    },
+    {
+      "id": "torque_from_inertia",
+      "tex": "M = I·alpha",
+      "zh": "力矩等于转动惯量与角加速度的乘积",
+      "category": "力学",
+      "pattern": "product",
+      "signature": {
+        "lhs": {
+          "symbol": "M_torque",
+          "dim": {
+            "M": 1,
+            "L": 2,
+            "T": -2
+          },
+          "structure": "vector"
+        },
+        "rhs": [
+          {
+            "symbol": "I",
+            "dim": {
+              "M": 1,
+              "L": 2
+            },
+            "structure": "matrix"
+          },
+          {
+            "symbol": "alpha",
+            "dim": {
+              "T": -2
+            },
+            "structure": "vector"
+          }
+        ],
+        "ops": [
+          "mul"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "equivalence",
+          "from": "N·m/rad",
+          "to": "kg·m^2·rad/s^2",
+          "via": "M = I·α",
+          "note": "转动形式的牛顿第二定律。转动惯量是 3×3 张量，元素量纲为 kg·m²；角加速度带 rad 标记，故力矩也带"
+        }
+      ]
+    },
+    {
+      "id": "moment_of_inertia_integral",
+      "tex": "I = ∫∫∫ r^2·rho dV",
+      "zh": "转动惯量等于密度对体积的 r² 加权积分",
+      "category": "力学",
+      "pattern": "integral",
+      "signature": {
+        "lhs": {
+          "symbol": "I_rot",
+          "dim": {
+            "M": 1,
+            "L": 2
+          },
+          "structure": "matrix"
+        },
+        "rhs": [
+          {
+            "symbol": "rho",
+            "dim": {
+              "M": 1,
+              "L": -3
+            }
+          },
+          {
+            "symbol": "r",
+            "dim": {
+              "L": 1
+            },
+            "exp": 2
+          },
+          {
+            "symbol": "V_vol",
+            "dim": {
+              "L": 3
+            },
+            "role": "integrator",
+            "order": 1
+          }
+        ],
+        "ops": [
+          "mul",
+          "pow",
+          "integral"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "integral",
+          "from": "kg/m^3",
+          "wrt": "x",
+          "order": 3,
+          "to": "kg·m^2",
+          "via": "I = ∫∫∫ r²ρ dV",
+          "note": "密度对体积三重积分得到质量量纲（L 的 -3 与 +3 抵消），再乘 r² 得 kg·m²。这是「矩阵元素有量纲」的典型例：惯性张量每个元素都是 kg·m²"
+        }
+      ],
+      "defines": "moment_of_inertia"
+    },
+    {
+      "id": "impulse_momentum_theorem",
+      "tex": "p = ∫F dt",
+      "zh": "动量等于力对时间的积分（冲量定理）",
+      "category": "力学",
+      "pattern": "integral",
+      "signature": {
+        "lhs": {
+          "symbol": "p",
+          "dim": {
+            "M": 1,
+            "L": 1,
+            "T": -1
+          },
+          "structure": "vector"
+        },
+        "rhs": [
+          {
+            "symbol": "F",
+            "dim": {
+              "M": 1,
+              "L": 1,
+              "T": -2
+            },
+            "role": "operand",
+            "structure": "vector"
+          },
+          {
+            "symbol": "t",
+            "dim": {
+              "T": 1
+            },
+            "role": "integrator",
+            "order": 1
+          }
+        ],
+        "ops": [
+          "integral"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "integral",
+          "from": "N",
+          "wrt": "s",
+          "to": "kg·m/s",
+          "via": "p = ∫F dt",
+          "note": "力对时间积分：量纲加上一阶时间，得动量量纲"
+        },
+        {
+          "kind": "equivalence",
+          "from": "N·s",
+          "to": "kg·m/s",
+          "via": "p = ∫F dt",
+          "note": "冲量单位 N·s 与动量单位 kg·m/s 量纲相同"
+        }
+      ]
+    },
+    {
+      "id": "displacement_integral",
+      "tex": "x = ∫v dt",
+      "zh": "位移等于速度对时间的积分",
+      "category": "几何与运动学",
+      "pattern": "integral",
+      "signature": {
+        "lhs": {
+          "symbol": "x",
+          "dim": {
+            "L": 1
+          },
+          "structure": "vector"
+        },
+        "rhs": [
+          {
+            "symbol": "v",
+            "dim": {
+              "L": 1,
+              "T": -1
+            },
+            "role": "operand",
+            "structure": "vector"
+          },
+          {
+            "symbol": "t",
+            "dim": {
+              "T": 1
+            },
+            "role": "integrator",
+            "order": 1
+          }
+        ],
+        "ops": [
+          "integral"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "integral",
+          "from": "m/s",
+          "wrt": "s",
+          "to": "m",
+          "via": "x = ∫v dt",
+          "note": "速度对时间积分得位移"
+        }
+      ]
+    },
+    {
+      "id": "velocity_derivative",
+      "tex": "v = dx/dt",
+      "zh": "速度等于位移对时间的导数",
+      "category": "几何与运动学",
+      "pattern": "gradient",
+      "signature": {
+        "lhs": {
+          "symbol": "v",
+          "dim": {
+            "L": 1,
+            "T": -1
+          },
+          "structure": "vector"
+        },
+        "rhs": [
+          {
+            "symbol": "x",
+            "dim": {
+              "L": 1
+            },
+            "role": "operand",
+            "structure": "vector"
+          },
+          {
+            "symbol": "t",
+            "dim": {
+              "T": 1
+            },
+            "role": "differentiator",
+            "order": 1
+          }
+        ],
+        "ops": [
+          "derivative"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "derivative",
+          "from": "m",
+          "wrt": "s",
+          "to": "m/s",
+          "via": "v = dx/dt",
+          "note": "位移对时间求导：量纲减去一阶时间"
+        }
+      ],
+      "defines": "velocity"
+    },
+    {
+      "id": "acceleration_derivative",
+      "tex": "a = dv/dt",
+      "zh": "加速度等于速度对时间的导数",
+      "category": "几何与运动学",
+      "pattern": "gradient",
+      "signature": {
+        "lhs": {
+          "symbol": "a",
+          "dim": {
+            "L": 1,
+            "T": -2
+          },
+          "structure": "vector"
+        },
+        "rhs": [
+          {
+            "symbol": "v",
+            "dim": {
+              "L": 1,
+              "T": -1
+            },
+            "role": "operand",
+            "structure": "vector"
+          },
+          {
+            "symbol": "t",
+            "dim": {
+              "T": 1
+            },
+            "role": "differentiator",
+            "order": 1
+          }
+        ],
+        "ops": [
+          "derivative"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "derivative",
+          "from": "m/s",
+          "wrt": "s",
+          "to": "m/s^2",
+          "via": "a = dv/dt",
+          "note": "速度对时间求导得加速度。再求一次即急动度 m/s³"
+        }
+      ],
+      "defines": "acceleration"
+    },
+    {
+      "id": "pressure_definition",
+      "tex": "p = F/A",
+      "zh": "压强等于压力除以面积",
+      "category": "力学",
+      "pattern": "ratio",
+      "signature": {
+        "lhs": {
+          "symbol": "p_press",
+          "dim": {
+            "M": 1,
+            "L": -1,
+            "T": -2
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "F",
+            "dim": {
+              "M": 1,
+              "L": 1,
+              "T": -2
+            },
+            "structure": "vector"
+          },
+          {
+            "symbol": "A",
+            "dim": {
+              "L": 2
+            },
+            "role": "divisor"
+          }
+        ],
+        "ops": [
+          "div"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "equivalence",
+          "from": "Pa",
+          "to": "N/m^2",
+          "via": "p = F/A",
+          "note": "帕 = 牛每平方米"
+        },
+        {
+          "kind": "equivalence",
+          "from": "J/m^3",
+          "to": "N/m^2",
+          "via": "p = F/A",
+          "note": "能量密度与压强的量纲相同：J/m³ = N/m²"
+        }
+      ],
+      "defines": "pressure"
+    },
+    {
+      "id": "hookes_law",
+      "tex": "F = -k·x",
+      "zh": "胡克定律",
+      "category": "力学",
+      "pattern": "product",
+      "signature": {
+        "lhs": {
+          "symbol": "F",
+          "dim": {
+            "M": 1,
+            "L": 1,
+            "T": -2
+          },
+          "structure": "vector"
+        },
+        "rhs": [
+          {
+            "symbol": "k",
+            "dim": {
+              "M": 1,
+              "T": -2
+            }
+          },
+          {
+            "symbol": "x",
+            "dim": {
+              "L": 1
+            },
+            "structure": "vector"
+          }
+        ],
+        "ops": [
+          "neg",
+          "mul"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "equivalence",
+          "from": "N/m",
+          "to": "kg/s^2",
+          "via": "F = -k·x",
+          "note": "弹簧刚度的单位 N/m 展开为 kg/s²"
+        }
+      ]
+    },
+    {
+      "id": "newton_gravitation",
+      "tex": "F = G·m1·m2/r^2",
+      "zh": "牛顿万有引力定律",
+      "category": "力学",
+      "pattern": "product",
+      "signature": {
+        "lhs": {
+          "symbol": "F",
+          "dim": {
+            "M": 1,
+            "L": 1,
+            "T": -2
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "G",
+            "dim": {
+              "L": 3,
+              "M": -1,
+              "T": -2
+            }
+          },
+          {
+            "symbol": "m1",
+            "dim": {
+              "M": 1
+            }
+          },
+          {
+            "symbol": "m2",
+            "dim": {
+              "M": 1
+            }
+          },
+          {
+            "symbol": "r",
+            "dim": {
+              "L": 1
+            },
+            "exp": -2
+          }
+        ],
+        "ops": [
+          "mul",
+          "pow"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "equivalence",
+          "from": "m^3/(kg·s^2)",
+          "to": "N·m^2/kg^2",
+          "via": "F = G·m1·m2/r^2",
+          "note": "引力常量由力的量纲反推得到"
+        }
+      ]
+    },
+    {
+      "id": "coulomb_law",
+      "tex": "F = k_e·q1·q2/r^2",
+      "zh": "库仑定律",
+      "category": "电磁学",
+      "pattern": "product",
+      "signature": {
+        "lhs": {
+          "symbol": "F",
+          "dim": {
+            "M": 1,
+            "L": 1,
+            "T": -2
+          },
+          "structure": "vector"
+        },
+        "rhs": [
+          {
+            "symbol": "k_e",
+            "dim": {
+              "M": 1,
+              "L": 3,
+              "T": -4,
+              "I": -2
+            }
+          },
+          {
+            "symbol": "q1",
+            "dim": {
+              "I": 1,
+              "T": 1
+            }
+          },
+          {
+            "symbol": "q2",
+            "dim": {
+              "I": 1,
+              "T": 1
+            }
+          },
+          {
+            "symbol": "r",
+            "dim": {
+              "L": 1
+            },
+            "exp": -2
+          }
+        ],
+        "ops": [
+          "mul",
+          "pow"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "equivalence",
+          "from": "N·m^2/C^2",
+          "to": "kg·m^3/(s^4·A^2)",
+          "via": "F = k_e·q1·q2/r^2",
+          "note": "静电力常量 k_e 的量纲"
+        }
+      ]
+    },
+    {
+      "id": "electric_field_definition",
+      "tex": "E = F/q",
+      "zh": "电场强度等于单位电荷所受的力",
+      "category": "电磁学",
+      "pattern": "ratio",
+      "signature": {
+        "lhs": {
+          "symbol": "E_field",
+          "dim": {
+            "M": 1,
+            "L": 1,
+            "T": -3,
+            "I": -1
+          },
+          "structure": "vector"
+        },
+        "rhs": [
+          {
+            "symbol": "F",
+            "dim": {
+              "M": 1,
+              "L": 1,
+              "T": -2
+            },
+            "structure": "vector"
+          },
+          {
+            "symbol": "q",
+            "dim": {
+              "I": 1,
+              "T": 1
+            },
+            "role": "divisor"
+          }
+        ],
+        "ops": [
+          "div"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "equivalence",
+          "from": "N/C",
+          "to": "kg·m/(s^3·A)",
+          "via": "E = F/q",
+          "note": "电场强度 = 力 / 电荷量，展开为基本单位"
+        }
+      ],
+      "defines": "electric_field_strength"
+    },
+    {
+      "id": "electric_field_from_potential",
+      "tex": "E = -dU/dx",
+      "zh": "电场强度等于电势的负梯度",
+      "category": "电磁学",
+      "pattern": "gradient",
+      "signature": {
+        "lhs": {
+          "symbol": "E",
+          "dim": {
+            "M": 1,
+            "L": 1,
+            "T": -3,
+            "I": -1
+          },
+          "structure": "vector"
+        },
+        "rhs": [
+          {
+            "symbol": "U",
+            "dim": {
+              "M": 1,
+              "L": 2,
+              "T": -3,
+              "I": -1
+            },
+            "role": "operand"
+          },
+          {
+            "symbol": "x",
+            "dim": {
+              "L": 1
+            },
+            "role": "differentiator",
+            "order": 1
+          }
+        ],
+        "ops": [
+          "neg",
+          "derivative"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "derivative",
+          "from": "V",
+          "wrt": "x",
+          "to": "V/m",
+          "via": "E = -dU/dx",
+          "note": "电势对长度求导得电场强度：这就是 V/m 这个单位的物理来源，它等价于 N/C"
+        },
+        {
+          "kind": "equivalence",
+          "from": "V/m",
+          "to": "N/C",
+          "via": "E = -dU/dx",
+          "note": "V/m 与 N/C 量纲完全相同——「每米电势差」与「每库仑力」是同一个量"
+        }
+      ]
+    },
+    {
+      "id": "electric_potential_definition",
+      "tex": "U = W/q",
+      "zh": "电势等于单位电荷的势能",
+      "category": "电磁学",
+      "pattern": "ratio",
+      "signature": {
+        "lhs": {
+          "symbol": "U",
+          "dim": {
+            "M": 1,
+            "L": 2,
+            "T": -3,
+            "I": -1
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "W",
+            "dim": {
+              "M": 1,
+              "L": 2,
+              "T": -2
+            }
+          },
+          {
+            "symbol": "q",
+            "dim": {
+              "I": 1,
+              "T": 1
+            },
+            "role": "divisor"
+          }
+        ],
+        "ops": [
+          "div"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "equivalence",
+          "from": "V",
+          "to": "J/C",
+          "via": "U = W/q",
+          "note": "伏 = 焦每库仑"
+        },
+        {
+          "kind": "equivalence",
+          "from": "V",
+          "to": "W/A",
+          "via": "U = W/q",
+          "note": "伏 = 瓦每安培（电功率与电流之比的量纲）"
+        }
+      ],
+      "defines": "electric_potential"
+    },
+    {
+      "id": "electric_current_definition",
+      "tex": "i = dq/dt",
+      "zh": "电流等于电荷量变化率",
+      "category": "电磁学",
+      "pattern": "gradient",
+      "signature": {
+        "lhs": {
+          "symbol": "i",
+          "dim": {
+            "I": 1
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "q",
+            "dim": {
+              "I": 1,
+              "T": 1
+            },
+            "role": "operand"
+          },
+          {
+            "symbol": "t",
+            "dim": {
+              "T": 1
+            },
+            "role": "differentiator",
+            "order": 1
+          }
+        ],
+        "ops": [
+          "derivative"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "derivative",
+          "from": "C",
+          "wrt": "s",
+          "to": "A",
+          "via": "i = dq/dt",
+          "note": "电荷量对时间求导得电流：安培是库仑每秒"
+        },
+        {
+          "kind": "derivative",
+          "from": "A·s",
+          "wrt": "s",
+          "to": "A",
+          "via": "i = dq/dt",
+          "note": "对时间求导后时间量纲抵消，正是「电流就是电荷流率」的量纲表述"
+        }
+      ],
+      "defines": "electric_current"
+    },
+    {
+      "id": "ohms_law",
+      "tex": "U = i·R",
+      "zh": "欧姆定律",
+      "category": "电磁学",
+      "pattern": "product",
+      "signature": {
+        "lhs": {
+          "symbol": "U",
+          "dim": {
+            "M": 1,
+            "L": 2,
+            "T": -3,
+            "I": -1
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "i",
+            "dim": {
+              "I": 1
+            }
+          },
+          {
+            "symbol": "R",
+            "dim": {
+              "M": 1,
+              "L": 2,
+              "T": -3,
+              "I": -2
+            }
+          }
+        ],
+        "ops": [
+          "mul"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "equivalence",
+          "from": "Ohm",
+          "to": "V/A",
+          "via": "U = i·R",
+          "note": "欧 = 伏每安培"
+        }
+      ]
+    },
+    {
+      "id": "electric_power",
+      "tex": "P = U·i",
+      "zh": "电功率",
+      "category": "电磁学",
+      "pattern": "product",
+      "signature": {
+        "lhs": {
+          "symbol": "P",
+          "dim": {
+            "M": 1,
+            "L": 2,
+            "T": -3
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "U",
+            "dim": {
+              "M": 1,
+              "L": 2,
+              "T": -3,
+              "I": -1
+            }
+          },
+          {
+            "symbol": "i",
+            "dim": {
+              "I": 1
+            }
+          }
+        ],
+        "ops": [
+          "mul"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "equivalence",
+          "from": "V·A",
+          "to": "W",
+          "via": "P = U·i",
+          "note": "伏安与瓦特量纲相同——这是电磁学与力学量纲的汇合点"
+        }
+      ]
+    },
+    {
+      "id": "capacitance_definition",
+      "tex": "C = q/U",
+      "zh": "电容等于电荷量除以电势差",
+      "category": "电磁学",
+      "pattern": "ratio",
+      "signature": {
+        "lhs": {
+          "symbol": "C_cap",
+          "dim": {
+            "M": -1,
+            "L": -2,
+            "T": 4,
+            "I": 2
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "q",
+            "dim": {
+              "I": 1,
+              "T": 1
+            }
+          },
+          {
+            "symbol": "U",
+            "dim": {
+              "M": 1,
+              "L": 2,
+              "T": -3,
+              "I": -1
+            },
+            "role": "divisor"
+          }
+        ],
+        "ops": [
+          "div"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "equivalence",
+          "from": "F",
+          "to": "C/V",
+          "via": "C = q/U",
+          "note": "法拉 = 库仑每伏"
+        }
+      ],
+      "defines": "capacitance"
+    },
+    {
+      "id": "magnetic_force_lorentz",
+      "tex": "F = q·v·B",
+      "zh": "洛伦兹力（磁场部分）",
+      "category": "电磁学",
+      "pattern": "product",
+      "signature": {
+        "lhs": {
+          "symbol": "F",
+          "dim": {
+            "M": 1,
+            "L": 1,
+            "T": -2
+          },
+          "structure": "vector"
+        },
+        "rhs": [
+          {
+            "symbol": "q",
+            "dim": {
+              "I": 1,
+              "T": 1
+            }
+          },
+          {
+            "symbol": "v",
+            "dim": {
+              "L": 1,
+              "T": -1
+            },
+            "structure": "vector"
+          },
+          {
+            "symbol": "B",
+            "dim": {
+              "M": 1,
+              "T": -2,
+              "I": -1
+            },
+            "structure": "vector"
+          }
+        ],
+        "ops": [
+          "mul"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "equivalence",
+          "from": "T",
+          "to": "N/(A·m)",
+          "via": "F = q·v·B",
+          "note": "特斯拉 = 牛每安培米"
+        }
+      ]
+    },
+    {
+      "id": "inductance_definition",
+      "tex": "U = L·di/dt",
+      "zh": "电感上的感应电压",
+      "category": "电磁学",
+      "pattern": "product",
+      "signature": {
+        "lhs": {
+          "symbol": "U",
+          "dim": {
+            "M": 1,
+            "L": 2,
+            "T": -3,
+            "I": -1
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "L",
+            "dim": {
+              "M": 1,
+              "L": 2,
+              "T": -2,
+              "I": -2
+            }
+          },
+          {
+            "symbol": "i",
+            "dim": {
+              "I": 1
+            }
+          },
+          {
+            "symbol": "t",
+            "dim": {
+              "T": 1
+            },
+            "exp": -1
+          }
+        ],
+        "ops": [
+          "mul",
+          "pow"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "equivalence",
+          "from": "H",
+          "to": "Wb/A",
+          "via": "U = L·di/dt",
+          "note": "亨利 = 韦伯每安培"
+        }
+      ]
+    },
+    {
+      "id": "specific_heat_capacity_definition",
+      "tex": "c = Q/(m·dT)",
+      "zh": "比热容等于热量除以质量与温差之积",
+      "category": "热力学",
+      "pattern": "product",
+      "signature": {
+        "lhs": {
+          "symbol": "c",
+          "dim": {
+            "L": 2,
+            "T": -2,
+            "TH": -1
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "Q",
+            "dim": {
+              "M": 1,
+              "L": 2,
+              "T": -2
+            }
+          },
+          {
+            "symbol": "m",
+            "dim": {
+              "M": 1
+            },
+            "role": "divisor"
+          },
+          {
+            "symbol": "dT",
+            "dim": {
+              "TH": 1
+            },
+            "role": "divisor"
+          }
+        ],
+        "ops": [
+          "div"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "equivalence",
+          "from": "J/(kg·K)",
+          "to": "m^2/(s^2·K)",
+          "via": "c = Q/(m·ΔT)",
+          "note": "比热容的定义式：单位质量物质温度升高 1 K 所需的热量"
+        }
+      ],
+      "defines": "specific_heat_capacity"
+    },
+    {
+      "id": "dynamic_viscosity_definition",
+      "tex": "mu = tau·y/v",
+      "zh": "动力黏度等于切应力乘横向坐标除以流速",
+      "category": "流体力学",
+      "pattern": "product",
+      "signature": {
+        "lhs": {
+          "symbol": "mu",
+          "dim": {
+            "M": 1,
+            "L": -1,
+            "T": -1
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "tau",
+            "dim": {
+              "M": 1,
+              "L": -1,
+              "T": -2
+            },
+            "role": "operand",
+            "structure": "matrix"
+          },
+          {
+            "symbol": "y",
+            "dim": {
+              "L": 1
+            }
+          },
+          {
+            "symbol": "v",
+            "dim": {
+              "L": 1,
+              "T": -1
+            },
+            "exp": -1,
+            "structure": "vector"
+          }
+        ],
+        "ops": [
+          "mul",
+          "pow"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "equivalence",
+          "from": "Pa·s",
+          "to": "kg/(m·s)",
+          "via": "μ = τ·y/v",
+          "note": "动力黏度的定义式：切应力除以速度梯度。速度梯度 dv/dy 的量纲是 T⁻¹，所以 μ 的量纲是 切应力 ÷ 速度梯度"
+        }
+      ],
+      "defines": "dynamic_viscosity"
+    },
+    {
+      "id": "inductance_self",
+      "tex": "L = Phi/i",
+      "zh": "电感等于磁通链与电流之比",
+      "category": "电磁学",
+      "pattern": "ratio",
+      "defines": "inductance",
+      "signature": {
+        "lhs": {
+          "symbol": "L_ind",
+          "dim": {
+            "M": 1,
+            "L": 2,
+            "T": -2,
+            "I": -2
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "Phi",
+            "dim": {
+              "M": 1,
+              "L": 2,
+              "T": -2,
+              "I": -1
+            }
+          },
+          {
+            "symbol": "i",
+            "dim": {
+              "I": 1
+            },
+            "role": "divisor"
+          }
+        ],
+        "ops": [
+          "div"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "equivalence",
+          "from": "H",
+          "to": "Wb/A",
+          "via": "L = Φ/i",
+          "note": "亨利 = 韦伯每安培。这是电感的定义式（此前数据里缺它，只有 U = L·di/dt 这条关系式，而那条的 lhs 是电压）"
+        }
+      ]
+    },
+    {
+      "id": "magnetic_flux_density_definition",
+      "tex": "B = F/(q·v)",
+      "zh": "磁感应强度等于洛伦兹力除以电荷量与速度之积",
+      "category": "电磁学",
+      "pattern": "ratio",
+      "defines": "magnetic_flux_density",
+      "signature": {
+        "lhs": {
+          "symbol": "B",
+          "dim": {
+            "M": 1,
+            "T": -2,
+            "I": -1
+          },
+          "structure": "vector"
+        },
+        "rhs": [
+          {
+            "symbol": "F",
+            "dim": {
+              "M": 1,
+              "L": 1,
+              "T": -2
+            },
+            "structure": "vector"
+          },
+          {
+            "symbol": "q",
+            "dim": {
+              "I": 1,
+              "T": 1
+            },
+            "role": "divisor"
+          },
+          {
+            "symbol": "v",
+            "dim": {
+              "L": 1,
+              "T": -1
+            },
+            "structure": "vector",
+            "role": "divisor"
+          }
+        ],
+        "ops": [
+          "div",
+          "mul"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "equivalence",
+          "from": "T",
+          "to": "N/(A·m)",
+          "via": "B = F/(q·v)",
+          "note": "特斯拉 = 牛每安培米。这是磁感应强度的定义式"
+        },
+        {
+          "kind": "equivalence",
+          "from": "T",
+          "to": "kg/(s^2·A)",
+          "via": "B = F/(q·v)",
+          "note": "展开为基本单位"
+        }
+      ]
+    },
+    {
+      "id": "resistance_definition",
+      "tex": "R = U/i",
+      "zh": "电阻等于电压与电流之比",
+      "category": "电磁学",
+      "pattern": "ratio",
+      "defines": "resistance",
+      "signature": {
+        "lhs": {
+          "symbol": "R",
+          "dim": {
+            "M": 1,
+            "L": 2,
+            "T": -3,
+            "I": -2
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "U",
+            "dim": {
+              "M": 1,
+              "L": 2,
+              "T": -3,
+              "I": -1
+            }
+          },
+          {
+            "symbol": "i",
+            "dim": {
+              "I": 1
+            },
+            "role": "divisor"
+          }
+        ],
+        "ops": [
+          "div"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "equivalence",
+          "from": "Ohm",
+          "to": "V/A",
+          "via": "R = U/i",
+          "note": "欧 = 伏每安培。这是电阻的定义式"
+        },
+        {
+          "kind": "equivalence",
+          "from": "Ohm",
+          "to": "kg·m^2/(s^3·A^2)",
+          "via": "R = U/i",
+          "note": "展开为基本单位"
+        }
+      ]
+    },
+    {
+      "id": "momentum_definition",
+      "tex": "p = m·v",
+      "zh": "动量等于质量与速度的乘积",
+      "category": "力学",
+      "pattern": "product",
+      "signature": {
+        "lhs": {
+          "symbol": "p",
+          "dim": {
+            "M": 1,
+            "L": 1,
+            "T": -1
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "m",
+            "dim": {
+              "M": 1
+            }
+          },
+          {
+            "symbol": "v",
+            "dim": {
+              "L": 1,
+              "T": -1
+            },
+            "structure": "vector"
+          }
+        ],
+        "ops": [
+          "mul"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "equivalence",
+          "from": "kg·m/s",
+          "to": "N·s",
+          "via": "p = m·v",
+          "note": "动量的两种等价写法：N·s 正是冲量的单位，说明冲量就是动量的变化量"
+        }
+      ],
+      "defines": "momentum"
+    },
+    {
+      "id": "torque_definition",
+      "tex": "M = F·r",
+      "zh": "力矩等于力与力臂的乘积",
+      "category": "力学",
+      "pattern": "product",
+      "signature": {
+        "lhs": {
+          "symbol": "M_torque",
+          "dim": {
+            "M": 1,
+            "L": 2,
+            "T": -2
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "F",
+            "dim": {
+              "M": 1,
+              "L": 1,
+              "T": -2
+            },
+            "structure": "vector"
+          },
+          {
+            "symbol": "r",
+            "dim": {
+              "L": 1
+            },
+            "structure": "vector"
+          }
+        ],
+        "ops": [
+          "mul"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "equivalence",
+          "from": "N·m",
+          "to": "kg·m^2/s^2",
+          "via": "M = F·r",
+          "note": "力矩与能量量纲完全相同（都是 M·L²·T⁻²），但力矩是叉积、能量是标量积——量纲相同、物理意义不同"
+        }
+      ],
+      "defines": "torque"
+    },
+    {
+      "id": "power_definition",
+      "tex": "P = W/t",
+      "zh": "功率等于功与所用时间之比",
+      "category": "力学",
+      "pattern": "ratio",
+      "signature": {
+        "lhs": {
+          "symbol": "P",
+          "dim": {
+            "M": 1,
+            "L": 2,
+            "T": -3
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "W_work",
+            "dim": {
+              "M": 1,
+              "L": 2,
+              "T": -2
+            }
+          },
+          {
+            "symbol": "t",
+            "dim": {
+              "T": 1
+            },
+            "role": "divisor"
+          }
+        ],
+        "ops": [
+          "div"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "equivalence",
+          "from": "J/s",
+          "to": "W",
+          "via": "P = W/t",
+          "note": "瓦特就是焦耳每秒——SI 导出单位的定义方式"
+        }
+      ],
+      "defines": "power"
+    },
+    {
+      "id": "weight_definition",
+      "tex": "G = m·g",
+      "zh": "重力等于质量与重力加速度的乘积",
+      "category": "力学",
+      "pattern": "product",
+      "signature": {
+        "lhs": {
+          "symbol": "G",
+          "dim": {
+            "M": 1,
+            "L": 1,
+            "T": -2
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "m",
+            "dim": {
+              "M": 1
+            }
+          },
+          {
+            "symbol": "g",
+            "dim": {
+              "L": 1,
+              "T": -2
+            }
+          }
+        ],
+        "ops": [
+          "mul"
+        ]
+      },
+      "relations": [],
+      "defines": "weight"
+    },
+    {
+      "id": "density_definition",
+      "tex": "rho = m/V",
+      "zh": "密度等于质量与体积之比",
+      "category": "力学",
+      "pattern": "ratio",
+      "signature": {
+        "lhs": {
+          "symbol": "rho",
+          "dim": {
+            "M": 1,
+            "L": -3
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "m",
+            "dim": {
+              "M": 1
+            }
+          },
+          {
+            "symbol": "V_vol",
+            "dim": {
+              "L": 3
+            },
+            "role": "divisor"
+          }
+        ],
+        "ops": [
+          "div"
+        ]
+      },
+      "relations": [],
+      "defines": "density"
+    },
+    {
+      "id": "volume_definition",
+      "tex": "V = l·w·h",
+      "zh": "长方体的体积等于长、宽、高之积",
+      "category": "几何与运动学",
+      "pattern": "product",
+      "signature": {
+        "lhs": {
+          "symbol": "V_vol",
+          "dim": {
+            "L": 3
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "l",
+            "dim": {
+              "L": 1
+            }
+          },
+          {
+            "symbol": "w",
+            "dim": {
+              "L": 1
+            }
+          },
+          {
+            "symbol": "h",
+            "dim": {
+              "L": 1
+            }
+          }
+        ],
+        "ops": [
+          "mul"
+        ]
+      },
+      "relations": [],
+      "defines": "volume"
+    },
+    {
+      "id": "area_definition",
+      "tex": "A = l·w",
+      "zh": "矩形的面积等于长与宽之积",
+      "category": "几何与运动学",
+      "pattern": "product",
+      "signature": {
+        "lhs": {
+          "symbol": "A_area",
+          "dim": {
+            "L": 2
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "l",
+            "dim": {
+              "L": 1
+            }
+          },
+          {
+            "symbol": "w",
+            "dim": {
+              "L": 1
+            }
+          }
+        ],
+        "ops": [
+          "mul"
+        ]
+      },
+      "relations": [],
+      "defines": "area"
+    },
+    {
+      "id": "frequency_definition",
+      "tex": "f = 1/T",
+      "zh": "频率等于周期的倒数",
+      "category": "几何与运动学",
+      "pattern": "ratio",
+      "signature": {
+        "lhs": {
+          "symbol": "f",
+          "dim": {
+            "T": -1
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "T",
+            "dim": {
+              "T": 1
+            },
+            "role": "divisor"
+          }
+        ],
+        "ops": [
+          "div"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "equivalence",
+          "from": "Hz",
+          "to": "1/s",
+          "via": "f = 1/T",
+          "note": "赫兹就是「每秒一次」——频率的单位由时间单位导出"
+        }
+      ],
+      "defines": "frequency"
+    },
+    {
+      "id": "angular_velocity_definition",
+      "tex": "omega = v/r",
+      "zh": "角速度等于线速度与半径之比",
+      "category": "几何与运动学",
+      "pattern": "ratio",
+      "signature": {
+        "lhs": {
+          "symbol": "omega",
+          "dim": {
+            "T": -1
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "v",
+            "dim": {
+              "L": 1,
+              "T": -1
+            }
+          },
+          {
+            "symbol": "r",
+            "dim": {
+              "L": 1
+            },
+            "role": "divisor"
+          }
+        ],
+        "ops": [
+          "div"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "equivalence",
+          "from": "rad/s",
+          "to": "1/s",
+          "via": "omega = v/r",
+          "note": "rad 是无因次标记，所以 rad/s 与 1/s 量纲完全相同"
+        }
+      ],
+      "defines": "angular_velocity"
+    },
+    {
+      "id": "angular_acceleration_definition",
+      "tex": "alpha = a/r",
+      "zh": "角加速度等于切向加速度与半径之比",
+      "category": "几何与运动学",
+      "pattern": "ratio",
+      "signature": {
+        "lhs": {
+          "symbol": "alpha",
+          "dim": {
+            "T": -2
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "a",
+            "dim": {
+              "L": 1,
+              "T": -2
+            }
+          },
+          {
+            "symbol": "r",
+            "dim": {
+              "L": 1
+            },
+            "role": "divisor"
+          }
+        ],
+        "ops": [
+          "div"
+        ]
+      },
+      "relations": [],
+      "defines": "angular_acceleration"
+    },
+    {
+      "id": "angular_momentum_definition",
+      "tex": "L_ang = r·p",
+      "zh": "角动量等于位矢与动量的叉积",
+      "category": "力学",
+      "pattern": "product",
+      "signature": {
+        "lhs": {
+          "symbol": "L_ang",
+          "dim": {
+            "M": 1,
+            "L": 2,
+            "T": -1
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "r",
+            "dim": {
+              "L": 1
+            },
+            "structure": "vector"
+          },
+          {
+            "symbol": "p",
+            "dim": {
+              "M": 1,
+              "L": 1,
+              "T": -1
+            },
+            "structure": "vector"
+          }
+        ],
+        "ops": [
+          "mul"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "equivalence",
+          "from": "kg·m^2/s",
+          "to": "J·s",
+          "via": "L_ang = r·p",
+          "note": "角动量与「作用量」量纲相同（J·s），这不是巧合：角动量的量子化单位正是作用量"
+        }
+      ],
+      "defines": "angular_momentum"
+    },
+    {
+      "id": "impulse_definition",
+      "tex": "I_imp = F·t",
+      "zh": "冲量等于力与作用时间的乘积",
+      "category": "力学",
+      "pattern": "product",
+      "signature": {
+        "lhs": {
+          "symbol": "I_imp",
+          "dim": {
+            "M": 1,
+            "L": 1,
+            "T": -1
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "F",
+            "dim": {
+              "M": 1,
+              "L": 1,
+              "T": -2
+            },
+            "structure": "vector"
+          },
+          {
+            "symbol": "t",
+            "dim": {
+              "T": 1
+            }
+          }
+        ],
+        "ops": [
+          "mul"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "equivalence",
+          "from": "N·s",
+          "to": "kg·m/s",
+          "via": "I_imp = F·t",
+          "note": "冲量与动量量纲相同，冲量定理即由此而来"
+        }
+      ],
+      "defines": "impulse"
+    },
+    {
+      "id": "jerk_definition",
+      "tex": "j_jerk = da/dt",
+      "zh": "急动度等于加速度对时间的导数",
+      "category": "几何与运动学",
+      "pattern": "gradient",
+      "signature": {
+        "lhs": {
+          "symbol": "j_jerk",
+          "dim": {
+            "L": 1,
+            "T": -3
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "a",
+            "dim": {
+              "L": 1,
+              "T": -2
+            },
+            "role": "operand"
+          },
+          {
+            "symbol": "t",
+            "dim": {
+              "T": 1
+            },
+            "role": "differentiator",
+            "order": 1
+          }
+        ],
+        "ops": [
+          "derivative"
+        ]
+      },
+      "relations": [],
+      "defines": "jerk"
+    },
+    {
+      "id": "gravitational_constant_definition",
+      "tex": "G_const = F·r^2/(m1·m2)",
+      "zh": "由万有引力定律反解出的引力常量",
+      "category": "力学",
+      "pattern": "ratio",
+      "signature": {
+        "lhs": {
+          "symbol": "G_const",
+          "dim": {
+            "M": -1,
+            "L": 3,
+            "T": -2
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "F",
+            "dim": {
+              "M": 1,
+              "L": 1,
+              "T": -2
+            }
+          },
+          {
+            "symbol": "r",
+            "dim": {
+              "L": 1
+            },
+            "exp": 2
+          },
+          {
+            "symbol": "m1",
+            "dim": {
+              "M": 1
+            },
+            "role": "divisor"
+          },
+          {
+            "symbol": "m2",
+            "dim": {
+              "M": 1
+            },
+            "role": "divisor"
+          }
+        ],
+        "ops": [
+          "div"
+        ]
+      },
+      "relations": [],
+      "defines": "gravitational_constant"
+    },
+    {
+      "id": "bending_moment_definition",
+      "tex": "M_bending = F·l",
+      "zh": "弯矩等于力与力臂的乘积（梁的截面内力矩）",
+      "category": "材料力学",
+      "pattern": "product",
+      "signature": {
+        "lhs": {
+          "symbol": "M_bending",
+          "dim": {
+            "M": 1,
+            "L": 2,
+            "T": -2
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "F",
+            "dim": {
+              "M": 1,
+              "L": 1,
+              "T": -2
+            }
+          },
+          {
+            "symbol": "l",
+            "dim": {
+              "L": 1
+            }
+          }
+        ],
+        "ops": [
+          "mul"
+        ]
+      },
+      "relations": [],
+      "defines": "bending_moment"
+    },
+    {
+      "id": "electric_charge_definition",
+      "tex": "q = i·t",
+      "zh": "电荷量等于电流与时间的乘积",
+      "category": "电磁学",
+      "pattern": "product",
+      "signature": {
+        "lhs": {
+          "symbol": "q",
+          "dim": {
+            "T": 1,
+            "I": 1
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "i",
+            "dim": {
+              "I": 1
+            }
+          },
+          {
+            "symbol": "t",
+            "dim": {
+              "T": 1
+            }
+          }
+        ],
+        "ops": [
+          "mul"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "equivalence",
+          "from": "C",
+          "to": "A·s",
+          "via": "q = i·t",
+          "note": "库仑就是安培秒——电荷单位由电流单位导出"
+        }
+      ],
+      "defines": "electric_charge"
+    },
+    {
+      "id": "current_density_definition",
+      "tex": "j = i/A",
+      "zh": "电流密度等于电流与截面积之比",
+      "category": "电磁学",
+      "pattern": "ratio",
+      "signature": {
+        "lhs": {
+          "symbol": "j",
+          "dim": {
+            "L": -2,
+            "I": 1
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "i",
+            "dim": {
+              "I": 1
+            }
+          },
+          {
+            "symbol": "A",
+            "dim": {
+              "L": 2
+            },
+            "role": "divisor"
+          }
+        ],
+        "ops": [
+          "div"
+        ]
+      },
+      "relations": [],
+      "defines": "current_density"
+    },
+    {
+      "id": "electric_potential_energy_definition",
+      "tex": "E_pe = q·U",
+      "zh": "电势能等于电荷量与电势的乘积",
+      "category": "电磁学",
+      "pattern": "product",
+      "signature": {
+        "lhs": {
+          "symbol": "E_pe",
+          "dim": {
+            "M": 1,
+            "L": 2,
+            "T": -2
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "q",
+            "dim": {
+              "T": 1,
+              "I": 1
+            }
+          },
+          {
+            "symbol": "U",
+            "dim": {
+              "M": 1,
+              "L": 2,
+              "T": -3,
+              "I": -1
+            }
+          }
+        ],
+        "ops": [
+          "mul"
+        ]
+      },
+      "relations": [],
+      "defines": "electric_potential_energy"
+    },
+    {
+      "id": "gravitational_potential_energy_definition",
+      "tex": "E_pg = m·g·h",
+      "zh": "重力势能等于质量、重力加速度与高度之积",
+      "category": "力学",
+      "pattern": "product",
+      "signature": {
+        "lhs": {
+          "symbol": "E_pg",
+          "dim": {
+            "M": 1,
+            "L": 2,
+            "T": -2
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "m",
+            "dim": {
+              "M": 1
+            }
+          },
+          {
+            "symbol": "g",
+            "dim": {
+              "L": 1,
+              "T": -2
+            }
+          },
+          {
+            "symbol": "h",
+            "dim": {
+              "L": 1
+            }
+          }
+        ],
+        "ops": [
+          "mul"
+        ]
+      },
+      "relations": [],
+      "defines": "gravitational_potential_energy_q"
+    },
+    {
+      "id": "stress_definition",
+      "tex": "sigma = F/A",
+      "zh": "应力等于内力与受力面积之比",
+      "category": "材料力学",
+      "pattern": "ratio",
+      "signature": {
+        "lhs": {
+          "symbol": "sigma",
+          "dim": {
+            "M": 1,
+            "L": -1,
+            "T": -2
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "F",
+            "dim": {
+              "M": 1,
+              "L": 1,
+              "T": -2
+            }
+          },
+          {
+            "symbol": "A",
+            "dim": {
+              "L": 2
+            },
+            "role": "divisor"
+          }
+        ],
+        "ops": [
+          "div"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "equivalence",
+          "from": "Pa",
+          "to": "N/m^2",
+          "via": "sigma = F/A",
+          "note": "应力的单位与压强相同：都是「单位面积上的力」"
+        }
+      ],
+      "defines": "stress"
+    },
+    {
+      "id": "elastic_modulus_definition",
+      "tex": "E_mod = sigma/epsilon",
+      "zh": "弹性模量等于应力与应变之比（胡克定律的斜率）",
+      "category": "材料力学",
+      "pattern": "ratio",
+      "signature": {
+        "lhs": {
+          "symbol": "E_mod",
+          "dim": {
+            "M": 1,
+            "L": -1,
+            "T": -2
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "sigma",
+            "dim": {
+              "M": 1,
+              "L": -1,
+              "T": -2
+            }
+          },
+          {
+            "symbol": "epsilon",
+            "dim": {},
+            "role": "divisor"
+          }
+        ],
+        "ops": [
+          "div"
+        ]
+      },
+      "relations": [],
+      "defines": "elastic_modulus"
+    },
+    {
+      "id": "spring_constant_definition",
+      "tex": "k = F/x",
+      "zh": "弹簧刚度等于弹力与形变量之比",
+      "category": "力学",
+      "pattern": "ratio",
+      "signature": {
+        "lhs": {
+          "symbol": "k",
+          "dim": {
+            "M": 1,
+            "T": -2
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "F",
+            "dim": {
+              "M": 1,
+              "L": 1,
+              "T": -2
+            }
+          },
+          {
+            "symbol": "x",
+            "dim": {
+              "L": 1
+            },
+            "role": "divisor"
+          }
+        ],
+        "ops": [
+          "div"
+        ]
+      },
+      "relations": [],
+      "defines": "spring_constant"
+    },
+    {
+      "id": "surface_tension_definition",
+      "tex": "gamma = F/l",
+      "zh": "表面张力等于表面上的收缩力与作用线长度之比",
+      "category": "力学",
+      "pattern": "ratio",
+      "signature": {
+        "lhs": {
+          "symbol": "gamma",
+          "dim": {
+            "M": 1,
+            "T": -2
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "F",
+            "dim": {
+              "M": 1,
+              "L": 1,
+              "T": -2
+            }
+          },
+          {
+            "symbol": "l",
+            "dim": {
+              "L": 1
+            },
+            "role": "divisor"
+          }
+        ],
+        "ops": [
+          "div"
+        ]
+      },
+      "relations": [],
+      "defines": "surface_tension"
+    },
+    {
+      "id": "kinematic_viscosity_definition",
+      "tex": "nu = mu/rho",
+      "zh": "运动黏度等于动力黏度与密度之比",
+      "category": "流体力学",
+      "pattern": "ratio",
+      "signature": {
+        "lhs": {
+          "symbol": "nu",
+          "dim": {
+            "L": 2,
+            "T": -1
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "mu",
+            "dim": {
+              "M": 1,
+              "L": -1,
+              "T": -1
+            }
+          },
+          {
+            "symbol": "rho",
+            "dim": {
+              "M": 1,
+              "L": -3
+            },
+            "role": "divisor"
+          }
+        ],
+        "ops": [
+          "div"
+        ]
+      },
+      "relations": [],
+      "defines": "kinematic_viscosity"
+    },
+    {
+      "id": "sound_pressure_definition",
+      "tex": "p_ac = F/A",
+      "zh": "声压是声波引起的交变压强",
+      "category": "声学",
+      "pattern": "ratio",
+      "signature": {
+        "lhs": {
+          "symbol": "p_ac",
+          "dim": {
+            "M": 1,
+            "L": -1,
+            "T": -2
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "F",
+            "dim": {
+              "M": 1,
+              "L": 1,
+              "T": -2
+            }
+          },
+          {
+            "symbol": "A",
+            "dim": {
+              "L": 2
+            },
+            "role": "divisor"
+          }
+        ],
+        "ops": [
+          "div"
+        ]
+      },
+      "relations": [],
+      "defines": "sound_pressure"
+    },
+    {
+      "id": "sound_power_definition",
+      "tex": "P_ac = E/t",
+      "zh": "声功率等于声源辐射的声能与时间之比",
+      "category": "声学",
+      "pattern": "ratio",
+      "signature": {
+        "lhs": {
+          "symbol": "P_ac",
+          "dim": {
+            "M": 1,
+            "L": 2,
+            "T": -3
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "E",
+            "dim": {
+              "M": 1,
+              "L": 2,
+              "T": -2
+            }
+          },
+          {
+            "symbol": "t",
+            "dim": {
+              "T": 1
+            },
+            "role": "divisor"
+          }
+        ],
+        "ops": [
+          "div"
+        ]
+      },
+      "relations": [],
+      "defines": "sound_power"
+    },
+    {
+      "id": "sound_intensity_definition",
+      "tex": "I_ac = P/A",
+      "zh": "声强等于声功率与垂直面积之比",
+      "category": "声学",
+      "pattern": "ratio",
+      "signature": {
+        "lhs": {
+          "symbol": "I_ac",
+          "dim": {
+            "M": 1,
+            "T": -3
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "P",
+            "dim": {
+              "M": 1,
+              "L": 2,
+              "T": -3
+            }
+          },
+          {
+            "symbol": "A",
+            "dim": {
+              "L": 2
+            },
+            "role": "divisor"
+          }
+        ],
+        "ops": [
+          "div"
+        ]
+      },
+      "relations": [],
+      "defines": "sound_intensity"
+    },
+    {
+      "id": "intensity_definition",
+      "tex": "I_int = P/A",
+      "zh": "强度（能流密度）等于功率与垂直面积之比",
+      "category": "波动与辐射",
+      "pattern": "ratio",
+      "signature": {
+        "lhs": {
+          "symbol": "I_int",
+          "dim": {
+            "M": 1,
+            "T": -3
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "P",
+            "dim": {
+              "M": 1,
+              "L": 2,
+              "T": -3
+            }
+          },
+          {
+            "symbol": "A",
+            "dim": {
+              "L": 2
+            },
+            "role": "divisor"
+          }
+        ],
+        "ops": [
+          "div"
+        ]
+      },
+      "relations": [],
+      "defines": "intensity"
+    },
+    {
+      "id": "radiant_flux_definition",
+      "tex": "Phi_e = E/t",
+      "zh": "辐射通量等于辐射能与时间之比",
+      "category": "光学",
+      "pattern": "ratio",
+      "signature": {
+        "lhs": {
+          "symbol": "Phi_e",
+          "dim": {
+            "M": 1,
+            "L": 2,
+            "T": -3
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "E",
+            "dim": {
+              "M": 1,
+              "L": 2,
+              "T": -2
+            }
+          },
+          {
+            "symbol": "t",
+            "dim": {
+              "T": 1
+            },
+            "role": "divisor"
+          }
+        ],
+        "ops": [
+          "div"
+        ]
+      },
+      "relations": [],
+      "defines": "radiant_flux"
+    },
+    {
+      "id": "luminous_flux_definition",
+      "tex": "Phi_v = I_v·Omega",
+      "zh": "光通量等于发光强度与立体角之积",
+      "category": "光学",
+      "pattern": "product",
+      "signature": {
+        "lhs": {
+          "symbol": "Phi_v",
+          "dim": {
+            "J": 1
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "I_v",
+            "dim": {
+              "J": 1
+            }
+          },
+          {
+            "symbol": "Omega",
+            "dim": {},
+            "structure": "scalar"
+          }
+        ],
+        "ops": [
+          "mul"
+        ]
+      },
+      "relations": [],
+      "defines": "luminous_flux"
+    },
+    {
+      "id": "illuminance_definition",
+      "tex": "E_v = I_v/r^2",
+      "zh": "照度等于发光强度除以距离的平方（点光源的平方反比律）",
+      "category": "光学",
+      "pattern": "ratio",
+      "signature": {
+        "lhs": {
+          "symbol": "E_v",
+          "dim": {
+            "L": -2,
+            "J": 1
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "I_v",
+            "dim": {
+              "J": 1
+            }
+          },
+          {
+            "symbol": "r",
+            "dim": {
+              "L": 1
+            },
+            "role": "divisor",
+            "exp": 2
+          }
+        ],
+        "ops": [
+          "div"
+        ]
+      },
+      "relations": [],
+      "defines": "illuminance"
+    },
+    {
+      "id": "ideal_gas_law",
+      "tex": "p·V = n·R·T",
+      "zh": "理想气体状态方程：压强与体积之积等于物质的量、摩尔气体常量与温度之积",
+      "category": "热力学",
+      "pattern": "product",
+      "signature": {
+        "lhs": {
+          "symbol": "p_press",
+          "dim": {
+            "M": 1,
+            "L": -1,
+            "T": -2
+          }
+        },
+        "rhs": [
+          {
+            "symbol": "n",
+            "dim": {
+              "N": 1
+            }
+          },
+          {
+            "symbol": "R_gas",
+            "dim": {
+              "M": 1,
+              "L": 2,
+              "T": -2,
+              "N": -1,
+              "TH": -1
+            }
+          },
+          {
+            "symbol": "T",
+            "dim": {
+              "TH": 1
+            }
+          },
+          {
+            "symbol": "V_vol",
+            "dim": {
+              "L": 3
+            },
+            "exp": -1
+          }
+        ],
+        "ops": [
+          "mul"
+        ]
+      },
+      "relations": [
+        {
+          "kind": "equivalence",
+          "from": "Pa·m^3",
+          "to": "J",
+          "via": "p·V = n·R·T",
+          "note": "压强乘体积就是能量（J = Pa·m³），所以 pV 与 nRT 量纲相同——这正是量纲分析核对这条方程的方式"
+        }
+      ]
+    }
+  ]
+}

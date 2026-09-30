@@ -1,0 +1,1629 @@
+{
+  "kind": "quantities",
+  "note": "物理量条目。dim 必须与 unit_forms/decompositions 中每个表达式求出的量纲一致，由 registry 启动自检强制校验。structure 不参与量纲运算，仅用于展示与代数规则分发。angle 为弧度标记。",
+  "quantities": [
+    {
+      "id": "acceleration",
+      "zh": "加速度",
+      "symbol": "a",
+      "dim": {
+        "L": 1,
+        "T": -2
+      },
+      "category": "几何与运动学",
+      "unit_forms": [
+        "m/s^2"
+      ],
+      "decompositions": [
+        {
+          "expr": "m/s^2"
+        },
+        {
+          "expr": "N/kg"
+        }
+      ],
+      "domain": "mechanics",
+      "note": "速度对时间的变化率，a = dv/dt。量纲 L·T⁻²，也可写成 N/kg ——引力场强与加速度同量纲不是巧合，而是等效原理的直接体现。"
+    },
+    {
+      "id": "angular_acceleration",
+      "zh": "角加速度",
+      "symbol": "alpha",
+      "dim": {
+        "T": -2
+      },
+      "category": "几何与运动学",
+      "unit_forms": [
+        "rad/s^2"
+      ],
+      "decompositions": [
+        {
+          "expr": "rad/s^2"
+        }
+      ],
+      "domain": "mechanics",
+      "note": "角速度对时间的变化率，量纲 T⁻²。工程上也写作 rad/s²，其中 rad 是无因次标记，不改变量纲。"
+    },
+    {
+      "id": "angular_momentum",
+      "zh": "角动量",
+      "symbol": "L_ang",
+      "dim": {
+        "M": 1,
+        "L": 2,
+        "T": -1
+      },
+      "structure": "vector",
+      "category": "力学",
+      "unit_forms": [
+        "kg·m^2·rad/s",
+        "J·s/rad"
+      ],
+      "decompositions": [
+        {
+          "expr": "kg·m^2·rad/s"
+        },
+        {
+          "expr": "J·s/rad"
+        }
+      ],
+      "aliases": [
+        "L_ang"
+      ],
+      "domain": "mechanics",
+      "note": "位矢与动量的叉积，量纲 M·L²·T⁻¹。它对时间的变化率就是力矩 ——角动量与力矩的关系，和动量与力的关系完全平行。"
+    },
+    {
+      "id": "angular_velocity",
+      "zh": "角速度",
+      "symbol": "omega",
+      "dim": {
+        "T": -1
+      },
+      "category": "几何与运动学",
+      "unit_forms": [
+        "rad/s"
+      ],
+      "decompositions": [
+        {
+          "expr": "rad/s"
+        }
+      ],
+      "domain": "mechanics",
+      "note": "角度对时间的变化率，量纲 T⁻¹。因为角度是无因次量，它的量纲与频率相同，但物理意义完全不同：一个描述转动的快慢，一个描述周期的倒数。"
+    },
+    {
+      "id": "area",
+      "zh": "面积",
+      "symbol": "A_area",
+      "dim": {
+        "L": 2
+      },
+      "category": "几何与运动学",
+      "unit_forms": [
+        "m^2"
+      ],
+      "decompositions": [
+        {
+          "expr": "m^2"
+        }
+      ],
+      "domain": "geometry",
+      "note": "长度的平方，量纲 L²。它是二维的几何测度，与「长度」只差一个幂次。"
+    },
+    {
+      "id": "bending_moment",
+      "zh": "弯矩",
+      "symbol": "M_bending",
+      "dim": {
+        "M": 1,
+        "L": 2,
+        "T": -2
+      },
+      "structure": "vector",
+      "category": "材料力学",
+      "unit_forms": [
+        "N·m/rad"
+      ],
+      "decompositions": [
+        {
+          "expr": "N·m/rad"
+        },
+        {
+          "expr": "kg·m^2·rad/s^2"
+        }
+      ],
+      "homogeneous_with": [
+        "torque"
+      ],
+      "note": "弯矩与力矩同为转动效应量，故与力矩阵同量纲（带 rad 标记）。",
+      "aliases": [
+        "M_bending"
+      ],
+      "domain": "materials"
+    },
+    {
+      "id": "capacitance",
+      "zh": "电容",
+      "symbol": "C_cap",
+      "dim": {
+        "M": -1,
+        "L": -2,
+        "T": 4,
+        "I": 2
+      },
+      "category": "电磁学",
+      "unit_forms": [
+        "F",
+        "C/V"
+      ],
+      "decompositions": [
+        {
+          "expr": "F"
+        },
+        {
+          "expr": "C/V"
+        },
+        {
+          "expr": "A·s/V"
+        }
+      ],
+      "aliases": [
+        "C_cap"
+      ],
+      "domain": "electromagnetism",
+      "note": "电容器储存电荷的能力，C = q/U。量纲 M⁻¹·L⁻²·T⁴·I²，单位法拉 F。分子上有负质量量纲，这在 SI 导出单位里并不常见。"
+    },
+    {
+      "id": "chemical_potential_energy",
+      "zh": "化学势能",
+      "symbol": "E_ch",
+      "dim": {
+        "M": 1,
+        "L": 2,
+        "T": -2
+      },
+      "category": "热力学",
+      "unit_forms": [
+        "J"
+      ],
+      "decompositions": [
+        {
+          "expr": "J"
+        },
+        {
+          "expr": "N·m"
+        }
+      ],
+      "aliases": [
+        "E_ch",
+        "化学势能",
+        "化学能"
+      ],
+      "homogeneous_with": [
+        "energy",
+        "potential_energy"
+      ],
+      "note": "物质因化学键而储存的能量，化学反应中释放或吸收的就是它。量纲与所有能量形式相同，这正是「量纲不足以判定物理量」的又一个实例。",
+      "domain": "thermo",
+      "defined_as": "umbrella",
+      "definition_note": "化学势能指化学反应中伴随的能量变化部分，它没有独立的定义式：数值上就是能量，区别在于所处的情境（化学键的重新组合）。把它单独列出是为了标注这个语用区别。"
+    },
+    {
+      "id": "current_density",
+      "zh": "电流密度",
+      "symbol": "j",
+      "dim": {
+        "I": 1,
+        "L": -2
+      },
+      "structure": "vector",
+      "category": "电磁学",
+      "unit_forms": [
+        "A/m^2"
+      ],
+      "decompositions": [
+        {
+          "expr": "A/m^2"
+        }
+      ],
+      "domain": "electromagnetism",
+      "note": "单位截面积上通过的电流，j = i/A。量纲 L⁻²·I，单位 A/m²。"
+    },
+    {
+      "id": "density",
+      "zh": "密度",
+      "symbol": "rho",
+      "dim": {
+        "M": 1,
+        "L": -3
+      },
+      "category": "力学",
+      "unit_forms": [
+        "kg/m^3"
+      ],
+      "decompositions": [
+        {
+          "expr": "kg/m^3"
+        }
+      ],
+      "domain": "mechanics",
+      "note": "单位体积的质量，ρ = m/V。量纲 M·L⁻³，是流体力学里最常用的物性参数之一。"
+    },
+    {
+      "id": "dynamic_viscosity",
+      "zh": "动力黏度",
+      "symbol": "mu",
+      "dim": {
+        "M": 1,
+        "L": -1,
+        "T": -1
+      },
+      "category": "流体力学",
+      "unit_forms": [
+        "Pa·s",
+        "kg/(m·s)"
+      ],
+      "decompositions": [
+        {
+          "expr": "Pa·s"
+        },
+        {
+          "expr": "kg/(m·s)"
+        }
+      ],
+      "aliases": [
+        "mu"
+      ],
+      "domain": "fluids",
+      "note": "流体层间单位速度梯度所需的切应力，量纲 M·L⁻¹·T⁻¹，惯用写法 Pa·s。它刻画流体的「黏稠程度」本身。"
+    },
+    {
+      "id": "elastic_modulus",
+      "zh": "弹性模量",
+      "symbol": "E_mod",
+      "dim": {
+        "M": 1,
+        "L": -1,
+        "T": -2
+      },
+      "category": "材料力学",
+      "unit_forms": [
+        "Pa",
+        "N/m^2"
+      ],
+      "decompositions": [
+        {
+          "expr": "Pa"
+        },
+        {
+          "expr": "N/m^2"
+        }
+      ],
+      "homogeneous_with": [
+        "pressure",
+        "stress"
+      ],
+      "aliases": [
+        "E_mod"
+      ],
+      "domain": "materials",
+      "note": "应力与应变之比。应变是纯数，所以它的量纲与应力完全相同（M·L⁻¹·T⁻²）—— 这是「量纲相同、物理意义不同」的又一实例。"
+    },
+    {
+      "id": "elastic_potential_energy",
+      "zh": "弹性势能",
+      "symbol": "E_s",
+      "dim": {
+        "M": 1,
+        "L": 2,
+        "T": -2
+      },
+      "category": "力学",
+      "unit_forms": [
+        "J"
+      ],
+      "decompositions": [
+        {
+          "expr": "J"
+        },
+        {
+          "expr": "N·m"
+        }
+      ],
+      "aliases": [
+        "E_s",
+        "弹性势能"
+      ],
+      "homogeneous_with": [
+        "energy",
+        "potential_energy"
+      ],
+      "note": "弹簧等弹性体因形变而储存的能量，E_s = ½·k·x²。",
+      "domain": "mechanics"
+    },
+    {
+      "id": "electric_charge",
+      "zh": "电荷量",
+      "symbol": "q",
+      "dim": {
+        "I": 1,
+        "T": 1
+      },
+      "category": "电磁学",
+      "unit_forms": [
+        "C",
+        "A·s"
+      ],
+      "decompositions": [
+        {
+          "expr": "A·s"
+        },
+        {
+          "expr": "C"
+        }
+      ],
+      "domain": "electromagnetism",
+      "note": "电流对时间的积分，q = ∫i dt。量纲 T·I，单位库仑 C。"
+    },
+    {
+      "id": "electric_current",
+      "zh": "电流",
+      "symbol": "i",
+      "dim": {
+        "I": 1
+      },
+      "category": "电磁学",
+      "unit_forms": [
+        "A",
+        "C/s"
+      ],
+      "decompositions": [
+        {
+          "expr": "A"
+        },
+        {
+          "expr": "C/s"
+        }
+      ],
+      "aliases": [
+        "电流"
+      ],
+      "domain": "electromagnetism",
+      "note": "单位时间通过的电荷量，i = dq/dt。它是 SI 七个基本量之一，量纲 I 由安培这一基本单位直接定义。"
+    },
+    {
+      "id": "electric_field_strength",
+      "zh": "电场强度",
+      "symbol": "E_field",
+      "dim": {
+        "M": 1,
+        "L": 1,
+        "T": -3,
+        "I": -1
+      },
+      "structure": "vector",
+      "category": "电磁学",
+      "unit_forms": [
+        "N/C",
+        "V/m",
+        "kg·m/(s^3·A)"
+      ],
+      "decompositions": [
+        {
+          "expr": "kg·m/(s^3·A)"
+        },
+        {
+          "expr": "N/C"
+        },
+        {
+          "expr": "V/m"
+        },
+        {
+          "expr": "J/(C·m)"
+        }
+      ],
+      "aliases": [
+        "E_field"
+      ],
+      "domain": "electromagnetism",
+      "note": "单位电荷所受的电场力，E = F/q。N/C 与 V/m 量纲相同，后者在静电学里更常用 —— 两种写法能互相换算，正是量纲分析给出的结论。"
+    },
+    {
+      "id": "electric_potential",
+      "zh": "电势",
+      "symbol": "U",
+      "dim": {
+        "M": 1,
+        "L": 2,
+        "T": -3,
+        "I": -1
+      },
+      "category": "电磁学",
+      "unit_forms": [
+        "V",
+        "J/C",
+        "W/A"
+      ],
+      "decompositions": [
+        {
+          "expr": "kg·m^2/(s^3·A)"
+        },
+        {
+          "expr": "J/C"
+        },
+        {
+          "expr": "W/A"
+        },
+        {
+          "expr": "V"
+        }
+      ],
+      "aliases": [
+        "U"
+      ],
+      "domain": "electromagnetism",
+      "note": "单位电荷所具有的电势能，U = W/q。量纲 M·L²·T⁻³·I⁻¹，单位伏特 V。"
+    },
+    {
+      "id": "electric_potential_energy",
+      "zh": "电势能",
+      "symbol": "E_pe",
+      "dim": {
+        "M": 1,
+        "L": 2,
+        "T": -2
+      },
+      "category": "电磁学",
+      "unit_forms": [
+        "J"
+      ],
+      "decompositions": [
+        {
+          "expr": "J"
+        },
+        {
+          "expr": "N·m"
+        }
+      ],
+      "aliases": [
+        "E_pe",
+        "电势能"
+      ],
+      "homogeneous_with": [
+        "energy",
+        "potential_energy"
+      ],
+      "note": "电荷在电场中因位置而具有的能量。注意与「电势」（单位电荷的能量，量纲不同）区分。",
+      "domain": "electromagnetism"
+    },
+    {
+      "id": "energy",
+      "zh": "能量（总称）",
+      "symbol": "E",
+      "dim": {
+        "M": 1,
+        "L": 2,
+        "T": -2
+      },
+      "category": "力学",
+      "unit_forms": [
+        "J",
+        "N·m",
+        "kg·m^2/s^2"
+      ],
+      "decompositions": [
+        {
+          "expr": "kg·m^2/s^2"
+        },
+        {
+          "expr": "N·m"
+        },
+        {
+          "expr": "W·s"
+        },
+        {
+          "expr": "Pa·m^3"
+        },
+        {
+          "expr": "J"
+        }
+      ],
+      "aliases": [
+        "E",
+        "能量"
+      ],
+      "note": "能量是所有能量形式的总称。动能、势能、电势能、化学能等都是它的一种，量纲完全相同（M·L²·T⁻²）——这正是「量纲不足以判定物理量」的典型体现。",
+      "homogeneous_with": [
+        "work",
+        "kinetic_energy",
+        "potential_energy",
+        "elastic_potential_energy",
+        "electric_potential_energy",
+        "chemical_potential_energy"
+      ],
+      "domain": "mechanics",
+      "defined_as": "umbrella",
+      "definition_note": "「能量」是一个总称量纲，不是一个具体的物理量：动能、势能、功、力矩、弯矩、热量、化学势能全都落在 M·L²·T⁻² 上。它没有统一的定义式 —— 这正是「量纲相同不等于物理量相同」的最好例子。"
+    },
+    {
+      "id": "force",
+      "zh": "力",
+      "symbol": "F",
+      "dim": {
+        "M": 1,
+        "L": 1,
+        "T": -2
+      },
+      "structure": "vector",
+      "category": "力学",
+      "unit_forms": [
+        "N",
+        "kg·m/s^2"
+      ],
+      "decompositions": [
+        {
+          "expr": "kg·m/s^2"
+        },
+        {
+          "expr": "J/m"
+        },
+        {
+          "expr": "W·s/m"
+        },
+        {
+          "expr": "Pa·m^2"
+        },
+        {
+          "expr": "N"
+        }
+      ],
+      "aliases": [
+        "F"
+      ],
+      "domain": "mechanics",
+      "note": "改变物体运动状态的原因，F = m·a。量纲 M·L·T⁻²，单位牛顿 N。它是力学里被引用最多的量之一。"
+    },
+    {
+      "id": "frequency",
+      "zh": "频率",
+      "symbol": "f",
+      "dim": {
+        "T": -1
+      },
+      "category": "几何与运动学",
+      "unit_forms": [
+        "Hz"
+      ],
+      "decompositions": [
+        {
+          "expr": "Hz"
+        },
+        {
+          "expr": "1/s"
+        }
+      ],
+      "domain": "geometry",
+      "note": "单位时间内重复的次数，f = 1/T。量纲 T⁻¹，单位赫兹 Hz。它与角速度同量纲但意义不同。"
+    },
+    {
+      "id": "gravitational_constant",
+      "zh": "引力常量",
+      "symbol": "G_const",
+      "dim": {
+        "L": 3,
+        "M": -1,
+        "T": -2
+      },
+      "category": "力学",
+      "unit_forms": [
+        "m^3/(kg·s^2)"
+      ],
+      "decompositions": [
+        {
+          "expr": "m^3/(kg·s^2)"
+        }
+      ],
+      "aliases": [
+        "G_const"
+      ],
+      "domain": "constants",
+      "note": "万有引力定律 F = G·m₁·m₂/r² 中的比例常量，量纲 M⁻¹·L³·T⁻²。它是少数量纲里带负质量幂次的常量。"
+    },
+    {
+      "id": "gravitational_potential_energy_q",
+      "zh": "重力势能",
+      "symbol": "E_pg",
+      "dim": {
+        "M": 1,
+        "L": 2,
+        "T": -2
+      },
+      "category": "力学",
+      "unit_forms": [
+        "J"
+      ],
+      "decompositions": [
+        {
+          "expr": "J"
+        },
+        {
+          "expr": "N·m"
+        }
+      ],
+      "aliases": [
+        "E_pg",
+        "重力势能"
+      ],
+      "homogeneous_with": [
+        "potential_energy"
+      ],
+      "note": "重力势能是势能在重力场下的具体形式：E_p = m·g·h。",
+      "domain": "mechanics"
+    },
+    {
+      "id": "illuminance",
+      "zh": "照度",
+      "symbol": "E_v",
+      "dim": {
+        "J": 1,
+        "L": -2
+      },
+      "category": "光学",
+      "domain": "optics",
+      "unit_forms": [
+        "lx",
+        "lm/m^2"
+      ],
+      "decompositions": [
+        {
+          "expr": "cd/m^2"
+        },
+        {
+          "expr": "lm/m^2"
+        }
+      ],
+      "aliases": [
+        "照度",
+        "E_v"
+      ],
+      "note": "单位面积上接收到的光通量，单位勒克斯（lx = lm/m²）。"
+    },
+    {
+      "id": "impulse",
+      "zh": "冲量",
+      "symbol": "I_imp",
+      "dim": {
+        "M": 1,
+        "L": 1,
+        "T": -1
+      },
+      "structure": "vector",
+      "category": "力学",
+      "unit_forms": [
+        "N·s"
+      ],
+      "decompositions": [
+        {
+          "expr": "N·s"
+        },
+        {
+          "expr": "kg·m/s"
+        }
+      ],
+      "homogeneous_with": [
+        "momentum"
+      ],
+      "aliases": [
+        "I_imp",
+        "冲量"
+      ],
+      "domain": "mechanics",
+      "note": "力对时间的积分，量纲 M·L·T⁻¹。它与动量量纲完全一致 ——冲量定理说的正是「冲量等于动量变化」这件事。"
+    },
+    {
+      "id": "inductance",
+      "zh": "电感",
+      "symbol": "L_ind",
+      "dim": {
+        "M": 1,
+        "L": 2,
+        "T": -2,
+        "I": -2
+      },
+      "category": "电磁学",
+      "unit_forms": [
+        "H",
+        "Wb/A",
+        "V·s/A"
+      ],
+      "decompositions": [
+        {
+          "expr": "H"
+        },
+        {
+          "expr": "Wb/A"
+        },
+        {
+          "expr": "V·s/A"
+        }
+      ],
+      "aliases": [
+        "L_ind"
+      ],
+      "domain": "electromagnetism",
+      "note": "线圈产生感应电动势的能力，量纲 M·L²·T⁻²·I⁻²，单位亨利 H。它与电阻、电容一起构成电路的三个基本参数。"
+    },
+    {
+      "id": "intensity",
+      "zh": "强度（能流密度）",
+      "symbol": "I_int",
+      "dim": {
+        "M": 1,
+        "T": -3
+      },
+      "category": "波动与辐射",
+      "domain": "optics",
+      "unit_forms": [
+        "W/m^2"
+      ],
+      "decompositions": [
+        {
+          "expr": "W/m^2"
+        },
+        {
+          "expr": "kg/s^3"
+        }
+      ],
+      "aliases": [
+        "强度",
+        "能流密度",
+        "I_int"
+      ],
+      "homogeneous_with": [
+        "sound_intensity"
+      ],
+      "note": "单位面积上的功率。声强、光强都归到这一个量纲上——量纲相同而物理情境不同。"
+    },
+    {
+      "id": "jerk",
+      "zh": "急动度",
+      "symbol": "j_jerk",
+      "dim": {
+        "L": 1,
+        "T": -3
+      },
+      "category": "几何与运动学",
+      "unit_forms": [
+        "m/s^3"
+      ],
+      "decompositions": [
+        {
+          "expr": "m/s^3"
+        }
+      ],
+      "domain": "mechanics",
+      "note": "加速度对时间的变化率，a 的二阶导数。量纲 L·T⁻³，日常语感里对应「猛推一下」的那种突兀感。"
+    },
+    {
+      "id": "kinematic_viscosity",
+      "zh": "运动黏度",
+      "symbol": "nu",
+      "dim": {
+        "L": 2,
+        "T": -1
+      },
+      "category": "流体力学",
+      "unit_forms": [
+        "m^2/s"
+      ],
+      "decompositions": [
+        {
+          "expr": "m^2/s"
+        }
+      ],
+      "aliases": [
+        "nu"
+      ],
+      "domain": "fluids",
+      "note": "动力黏度与密度之比，ν = μ/ρ，量纲 L²·T⁻¹。它与扩散系数量纲相同，因为两者的输运方程形式一致。"
+    },
+    {
+      "id": "kinetic_energy",
+      "zh": "动能",
+      "symbol": "E_k",
+      "dim": {
+        "M": 1,
+        "L": 2,
+        "T": -2
+      },
+      "category": "力学",
+      "unit_forms": [
+        "J"
+      ],
+      "decompositions": [
+        {
+          "expr": "J"
+        },
+        {
+          "expr": "N·m"
+        }
+      ],
+      "aliases": [
+        "E_k",
+        "动能"
+      ],
+      "homogeneous_with": [
+        "energy",
+        "potential_energy"
+      ],
+      "note": "物体因运动而具有的能量，与速度的平方成正比。",
+      "domain": "mechanics"
+    },
+    {
+      "id": "length",
+      "zh": "长度",
+      "symbol": "l",
+      "dim": {
+        "L": 1
+      },
+      "category": "几何与运动学",
+      "unit_forms": [
+        "m"
+      ],
+      "decompositions": [
+        {
+          "expr": "m"
+        }
+      ],
+      "domain": "geometry",
+      "note": "SI 七个基本量之一，量纲 L。长度的基准是米，由光速定义。",
+      "defined_as": "si-base",
+      "definition_note": "长度是 SI 七个基本量之一，由米这一基本单位直接定义（2019 年起以光速固定值定义），不是由别的量通过公式推导出来的。"
+    },
+    {
+      "id": "luminous_flux",
+      "zh": "光通量",
+      "symbol": "Phi_v",
+      "dim": {
+        "J": 1
+      },
+      "category": "光学",
+      "domain": "optics",
+      "unit_forms": [
+        "lm"
+      ],
+      "decompositions": [
+        {
+          "expr": "cd·sr"
+        }
+      ],
+      "aliases": [
+        "光通量",
+        "Phi_v"
+      ],
+      "homogeneous_with": [
+        "luminous_intensity"
+      ],
+      "note": "人眼能感受到的辐射功率，单位流明（lm = cd·sr）。球面度是无因次的，所以光通量与发光强度量纲相同——这是量纲分析在光学里的一个陷阱。"
+    },
+    {
+      "id": "luminous_intensity",
+      "zh": "发光强度",
+      "symbol": "I_v",
+      "dim": {
+        "J": 1
+      },
+      "category": "光学",
+      "domain": "optics",
+      "unit_forms": [
+        "cd"
+      ],
+      "decompositions": [
+        {
+          "expr": "cd"
+        }
+      ],
+      "aliases": [
+        "发光强度",
+        "I_v"
+      ],
+      "note": "SI 七个基本量之一，单位坎德拉。它是唯一以「人眼视觉响应」为基准的基本量。",
+      "defined_as": "si-base",
+      "definition_note": "发光强度是 SI 七个基本量之一，由坎德拉这一基本单位定义。它带有主观视觉权重，是唯一与人眼响应相关的基本量。"
+    },
+    {
+      "id": "magnetic_flux_density",
+      "zh": "磁感应强度",
+      "symbol": "B",
+      "dim": {
+        "M": 1,
+        "T": -2,
+        "I": -1
+      },
+      "structure": "vector",
+      "category": "电磁学",
+      "unit_forms": [
+        "T",
+        "N/(A·m)",
+        "Wb/m^2"
+      ],
+      "decompositions": [
+        {
+          "expr": "kg/(s^2·A)"
+        },
+        {
+          "expr": "N/(A·m)"
+        },
+        {
+          "expr": "V·s/m^2"
+        },
+        {
+          "expr": "T"
+        }
+      ],
+      "domain": "electromagnetism",
+      "note": "单位电荷以单位速度运动时受到的磁力，量纲 M·T⁻²·I⁻¹，单位特斯拉 T。"
+    },
+    {
+      "id": "mass",
+      "zh": "质量",
+      "symbol": "m",
+      "dim": {
+        "M": 1
+      },
+      "category": "力学",
+      "unit_forms": [
+        "kg"
+      ],
+      "decompositions": [
+        {
+          "expr": "kg"
+        }
+      ],
+      "domain": "mechanics",
+      "note": "SI 七个基本量之一，量纲 M。注意 SI 的质量基准是千克 kg 而不是克 g ——它是唯一自带词头的基本单位。",
+      "defined_as": "si-base",
+      "definition_note": "质量是 SI 七个基本量之一，由千克这一基本单位直接定义（2019 年起以普朗克常数固定值定义）。"
+    },
+    {
+      "id": "moment_of_inertia",
+      "zh": "转动惯量",
+      "symbol": "I_rot",
+      "dim": {
+        "M": 1,
+        "L": 2
+      },
+      "structure": "matrix",
+      "category": "力学",
+      "unit_forms": [
+        "kg·m^2"
+      ],
+      "decompositions": [
+        {
+          "expr": "kg·m^2"
+        }
+      ],
+      "aliases": [
+        "I_rot",
+        "转动惯量",
+        "I"
+      ],
+      "domain": "mechanics",
+      "note": "刚体转动惯性的量度，I = ∫∫∫ r²·ρ dV。它是张量（矩阵结构），元素量纲为 M·L²。转动惯量把牛顿第二定律搬到转动情形。"
+    },
+    {
+      "id": "momentum",
+      "zh": "动量",
+      "symbol": "p",
+      "dim": {
+        "M": 1,
+        "L": 1,
+        "T": -1
+      },
+      "structure": "vector",
+      "category": "力学",
+      "unit_forms": [
+        "kg·m/s",
+        "N·s"
+      ],
+      "decompositions": [
+        {
+          "expr": "kg·m/s"
+        },
+        {
+          "expr": "N·s"
+        },
+        {
+          "expr": "J·s/m"
+        }
+      ],
+      "aliases": [
+        "p"
+      ],
+      "domain": "mechanics",
+      "note": "质量与速度的乘积，p = m·v。量纲 M·L·T⁻¹。它对时间的变化率就是力，这条关系是牛顿第二定律的原始形式。"
+    },
+    {
+      "id": "potential_energy",
+      "zh": "势能",
+      "symbol": "E_p",
+      "dim": {
+        "M": 1,
+        "L": 2,
+        "T": -2
+      },
+      "category": "力学",
+      "unit_forms": [
+        "J"
+      ],
+      "decompositions": [
+        {
+          "expr": "J"
+        },
+        {
+          "expr": "N·m"
+        }
+      ],
+      "aliases": [
+        "E_p",
+        "势能",
+        "位能"
+      ],
+      "homogeneous_with": [
+        "energy",
+        "kinetic_energy"
+      ],
+      "note": "物体因位置（或形变）而储存的能量。重力势能 E_p = m·g·h 是它最常见的具体形式。势能也常写作 U —— 但 U 在电磁学里是电势，两者量纲不同，所以符号表用 (符号, 量纲) 复合键把它们分开。",
+      "domain": "mechanics"
+    },
+    {
+      "id": "power",
+      "zh": "功率",
+      "symbol": "P",
+      "dim": {
+        "M": 1,
+        "L": 2,
+        "T": -3
+      },
+      "category": "力学",
+      "unit_forms": [
+        "W",
+        "J/s",
+        "N·m/s"
+      ],
+      "decompositions": [
+        {
+          "expr": "kg·m^2/s^3"
+        },
+        {
+          "expr": "J/s"
+        },
+        {
+          "expr": "N·m/s"
+        },
+        {
+          "expr": "V·A"
+        },
+        {
+          "expr": "W"
+        }
+      ],
+      "domain": "mechanics",
+      "note": "单位时间内完成的功，P = W/t。量纲 M·L²·T⁻³，单位瓦特 W。它与辐射通量、声功率同量纲。"
+    },
+    {
+      "id": "pressure",
+      "zh": "压强",
+      "symbol": "p_press",
+      "dim": {
+        "M": 1,
+        "L": -1,
+        "T": -2
+      },
+      "category": "力学",
+      "unit_forms": [
+        "Pa",
+        "N/m^2",
+        "J/m^3"
+      ],
+      "decompositions": [
+        {
+          "expr": "kg/(m·s^2)"
+        },
+        {
+          "expr": "N/m^2"
+        },
+        {
+          "expr": "J/m^3"
+        },
+        {
+          "expr": "Pa"
+        }
+      ],
+      "domain": "mechanics",
+      "note": "单位面积上受到的正压力，p = F/A。量纲 M·L⁻¹·T⁻²，单位帕斯卡 Pa。它与应力、弹性模量同量纲。"
+    },
+    {
+      "id": "radiant_flux",
+      "zh": "辐射通量",
+      "symbol": "Phi_e",
+      "dim": {
+        "M": 1,
+        "L": 2,
+        "T": -3
+      },
+      "category": "光学",
+      "domain": "optics",
+      "unit_forms": [
+        "W"
+      ],
+      "decompositions": [
+        {
+          "expr": "W"
+        },
+        {
+          "expr": "J/s"
+        }
+      ],
+      "aliases": [
+        "辐射通量",
+        "辐射功率",
+        "Phi_e"
+      ],
+      "homogeneous_with": [
+        "power",
+        "sound_power"
+      ],
+      "note": "以能量计的辐射功率，与「光通量」不同——后者已按人眼响应加权。两者量纲不同（辐射通量是功率，光通量是发光强度量纲）。这正是光学里容易混淆的一处。"
+    },
+    {
+      "id": "resistance",
+      "zh": "电阻",
+      "symbol": "R",
+      "dim": {
+        "M": 1,
+        "L": 2,
+        "T": -3,
+        "I": -2
+      },
+      "category": "电磁学",
+      "unit_forms": [
+        "Ohm",
+        "V/A"
+      ],
+      "decompositions": [
+        {
+          "expr": "V/A"
+        },
+        {
+          "expr": "kg·m^2/(s^3·A^2)"
+        },
+        {
+          "expr": "Ohm"
+        }
+      ],
+      "aliases": [
+        "R"
+      ],
+      "domain": "electromagnetism",
+      "note": "导体两端电压与电流之比，R = U/i。量纲 M·L²·T⁻³·I⁻²，单位欧姆 Ω。"
+    },
+    {
+      "id": "sound_intensity",
+      "zh": "声强",
+      "symbol": "I_ac",
+      "dim": {
+        "M": 1,
+        "T": -3
+      },
+      "category": "声学",
+      "domain": "acoustics",
+      "unit_forms": [
+        "W/m^2"
+      ],
+      "decompositions": [
+        {
+          "expr": "W/m^2"
+        },
+        {
+          "expr": "kg/s^3"
+        }
+      ],
+      "aliases": [
+        "声强",
+        "声强度",
+        "I_ac"
+      ],
+      "homogeneous_with": [
+        "intensity"
+      ],
+      "note": "单位面积上通过的声功率。声强级用分贝表示，但分贝是对数量，不是量纲单位。"
+    },
+    {
+      "id": "sound_power",
+      "zh": "声功率",
+      "symbol": "P_ac",
+      "dim": {
+        "M": 1,
+        "L": 2,
+        "T": -3
+      },
+      "category": "声学",
+      "domain": "acoustics",
+      "unit_forms": [
+        "W"
+      ],
+      "decompositions": [
+        {
+          "expr": "W"
+        },
+        {
+          "expr": "J/s"
+        },
+        {
+          "expr": "V·A"
+        }
+      ],
+      "aliases": [
+        "声功率",
+        "P_ac"
+      ],
+      "homogeneous_with": [
+        "power"
+      ],
+      "note": "声源在单位时间内辐射出的声能。量纲与（机械/电）功率相同。"
+    },
+    {
+      "id": "sound_pressure",
+      "zh": "声压",
+      "symbol": "p_ac",
+      "dim": {
+        "M": 1,
+        "L": -1,
+        "T": -2
+      },
+      "category": "声学",
+      "domain": "acoustics",
+      "unit_forms": [
+        "Pa",
+        "N/m^2"
+      ],
+      "decompositions": [
+        {
+          "expr": "Pa"
+        },
+        {
+          "expr": "N/m^2"
+        },
+        {
+          "expr": "J/m^3"
+        }
+      ],
+      "aliases": [
+        "声压",
+        "p_ac"
+      ],
+      "homogeneous_with": [
+        "pressure",
+        "stress"
+      ],
+      "note": "声波引起的压强起伏。量纲与压强、应力完全相同——又一个「同量纲异构」的实例。"
+    },
+    {
+      "id": "specific_heat_capacity",
+      "zh": "比热容",
+      "symbol": "c",
+      "dim": {
+        "L": 2,
+        "T": -2,
+        "TH": -1
+      },
+      "category": "热力学",
+      "unit_forms": [
+        "J/(kg·K)"
+      ],
+      "decompositions": [
+        {
+          "expr": "J/(kg·K)"
+        }
+      ],
+      "domain": "thermo",
+      "note": "单位质量物质升高单位温度所需的热量，量纲 L²·T⁻²·Θ⁻¹。它把热学量与力学量通过温度这个基本量联系起来。"
+    },
+    {
+      "id": "spring_constant",
+      "zh": "弹簧刚度",
+      "symbol": "k",
+      "dim": {
+        "M": 1,
+        "T": -2
+      },
+      "category": "力学",
+      "unit_forms": [
+        "N/m"
+      ],
+      "decompositions": [
+        {
+          "expr": "N/m"
+        }
+      ],
+      "domain": "mechanics",
+      "note": "弹簧产生单位形变所需的力，k = F/x，量纲 M·T⁻²。它与表面张力量纲相同 —— 两者都是「单位长度上的力」。"
+    },
+    {
+      "id": "stress",
+      "zh": "应力",
+      "symbol": "sigma",
+      "dim": {
+        "M": 1,
+        "L": -1,
+        "T": -2
+      },
+      "structure": "matrix",
+      "category": "材料力学",
+      "unit_forms": [
+        "Pa",
+        "N/m^2"
+      ],
+      "decompositions": [
+        {
+          "expr": "Pa"
+        },
+        {
+          "expr": "N/m^2"
+        }
+      ],
+      "homogeneous_with": [
+        "pressure"
+      ],
+      "aliases": [
+        "sigma"
+      ],
+      "domain": "materials",
+      "note": "单位面积上的内力，σ = F/A，量纲 M·L⁻¹·T⁻²。它与压强同量纲同形式，区别在于一个是构件内部的内力分布，一个是外部施加的压强。"
+    },
+    {
+      "id": "surface_tension",
+      "zh": "表面张力",
+      "symbol": "gamma",
+      "dim": {
+        "M": 1,
+        "T": -2
+      },
+      "category": "力学",
+      "unit_forms": [
+        "N/m"
+      ],
+      "decompositions": [
+        {
+          "expr": "N/m"
+        }
+      ],
+      "homogeneous_with": [
+        "spring_constant"
+      ],
+      "aliases": [
+        "gamma"
+      ],
+      "domain": "mechanics",
+      "note": "液体表面单位长度上的收缩力，量纲 M·T⁻²。它与弹簧刚度量纲相同，因为「单位长度上的力」与「单位形变上的力」在量纲上是一回事。"
+    },
+    {
+      "id": "time",
+      "zh": "时间",
+      "symbol": "t",
+      "dim": {
+        "T": 1
+      },
+      "category": "几何与运动学",
+      "unit_forms": [
+        "s",
+        "min",
+        "h"
+      ],
+      "decompositions": [
+        {
+          "expr": "s"
+        },
+        {
+          "expr": "min"
+        },
+        {
+          "expr": "h"
+        }
+      ],
+      "note": "SI 七个基本量之一。它同时是很多公式里求导与积分的自变量，所以符号表里 t 应能跳到这里。",
+      "aliases": [
+        "t"
+      ],
+      "domain": "geometry",
+      "defined_as": "si-base",
+      "definition_note": "时间是 SI 七个基本量之一，由秒这一基本单位直接定义（以铯-133 超精细跃迁频率固定值定义）。"
+    },
+    {
+      "id": "torque",
+      "zh": "力矩",
+      "symbol": "M_torque",
+      "dim": {
+        "M": 1,
+        "L": 2,
+        "T": -2
+      },
+      "structure": "vector",
+      "category": "力学",
+      "unit_forms": [
+        "N·m/rad",
+        "kg·m^2·rad/s^2"
+      ],
+      "decompositions": [
+        {
+          "expr": "N·m/rad"
+        },
+        {
+          "expr": "kg·m^2·rad/s^2"
+        },
+        {
+          "expr": "J/rad"
+        }
+      ],
+      "homogeneous_with": [
+        "bending_moment"
+      ],
+      "note": "力矩带 rad 标记：它由 r×F 定义，与 r·F（能量）的区别正是这个几何角。乘上角位移后 rad 消掉，得能量量纲。",
+      "aliases": [
+        "M",
+        "M_torque"
+      ],
+      "domain": "mechanics"
+    },
+    {
+      "id": "velocity",
+      "zh": "速度",
+      "symbol": "v",
+      "dim": {
+        "L": 1,
+        "T": -1
+      },
+      "category": "几何与运动学",
+      "unit_forms": [
+        "m/s"
+      ],
+      "decompositions": [
+        {
+          "expr": "m/s"
+        }
+      ],
+      "domain": "mechanics",
+      "note": "位移对时间的变化率，v = dx/dt。量纲 L·T⁻¹。"
+    },
+    {
+      "id": "volume",
+      "zh": "体积",
+      "symbol": "V_vol",
+      "dim": {
+        "L": 3
+      },
+      "category": "几何与运动学",
+      "unit_forms": [
+        "m^3"
+      ],
+      "decompositions": [
+        {
+          "expr": "m^3"
+        }
+      ],
+      "domain": "geometry",
+      "note": "长度的三次方，量纲 L³。它是三维的几何测度。"
+    },
+    {
+      "id": "weight",
+      "zh": "重力",
+      "symbol": "G",
+      "dim": {
+        "M": 1,
+        "L": 1,
+        "T": -2
+      },
+      "structure": "vector",
+      "category": "力学",
+      "unit_forms": [
+        "N"
+      ],
+      "decompositions": [
+        {
+          "expr": "N"
+        },
+        {
+          "expr": "kg·m/s^2"
+        }
+      ],
+      "homogeneous_with": [
+        "force"
+      ],
+      "domain": "mechanics",
+      "note": "物体所受的重力，G = m·g。量纲 M·L·T⁻² —— 与力相同，因为重力本来就是力。质量与重力的区别正体现在这里：一个量纲是 M，一个是 M·L·T⁻²。"
+    },
+    {
+      "id": "work",
+      "zh": "功",
+      "symbol": "W_work",
+      "dim": {
+        "M": 1,
+        "L": 2,
+        "T": -2
+      },
+      "category": "力学",
+      "unit_forms": [
+        "J",
+        "N·m"
+      ],
+      "decompositions": [
+        {
+          "expr": "J"
+        },
+        {
+          "expr": "N·m"
+        }
+      ],
+      "homogeneous_with": [
+        "energy"
+      ],
+      "aliases": [
+        "W",
+        "W_rot"
+      ],
+      "domain": "mechanics",
+      "note": "力与位移的标量积，W = F·s。量纲 M·L²·T⁻²，单位焦耳 J。注意它与力矩量纲相同、物理意义不同（一个是标量积，一个是叉积）。"
+    },
+    {
+      "id": "thermodynamic_temperature",
+      "zh": "热力学温度",
+      "symbol": "T_th",
+      "dim": {
+        "TH": 1
+      },
+      "category": "热力学",
+      "unit_forms": [
+        "K"
+      ],
+      "decompositions": [
+        {
+          "expr": "K"
+        }
+      ],
+      "aliases": [
+        "温度",
+        "T_th"
+      ],
+      "note": "SI 七个基本量之一，量纲 Θ。它衡量分子热运动的剧烈程度，是唯一无法由其他基本量导出的热学量。摄氏温度 t = T − 273.15 K 只是它的平移：两者量纲完全相同，零点不同——量纲分析看不出这个区别，这正是量纲法的边界。",
+      "domain": "thermo",
+      "defined_as": "si-base",
+      "definition_note": "热力学温度是 SI 七个基本量之一，由开尔文这一基本单位定义（2019 年起以玻尔兹曼常数固定值定义），不是由别的量通过公式推导出来的。"
+    },
+    {
+      "id": "amount_of_substance",
+      "zh": "物质的量",
+      "symbol": "n",
+      "dim": {
+        "N": 1
+      },
+      "category": "热力学",
+      "unit_forms": [
+        "mol"
+      ],
+      "decompositions": [
+        {
+          "expr": "mol"
+        }
+      ],
+      "aliases": [
+        "摩尔数"
+      ],
+      "note": "SI 七个基本量之一，量纲 N。它把「微粒个数」按阿伏伽德罗常数折算成宏观量，是七个基本量里唯一纯粹为了计数而设立的。",
+      "domain": "thermo",
+      "defined_as": "si-base",
+      "definition_note": "物质的量是 SI 七个基本量之一，由摩尔这一基本单位定义（以阿伏伽德罗常数固定值定义）。它的特殊之处在于衡量的其实是「粒子个数」这个纯数，乘以阿伏伽德罗常数才成为宏观量。"
+    }
+  ]
+}

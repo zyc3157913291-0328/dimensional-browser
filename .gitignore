@@ -1,0 +1,22 @@
+# ── Python ────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# ── 运行时用户数据（补录内容，属于使用者本机）──────────────
+# engine/paths.py 把 submissions.json 落在项目根目录（开发态）
+submissions.json
+
+# ── 打包产物 ──────────────────────────────────────────────
+build/
+dist/
+*.spec
+
+# ── 编辑器 / 系统 ─────────────────────────────────────────
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini

@@ -1,0 +1,31 @@
+{
+  "kind": "variable_units",
+  "note": "公式里求导/积分变量常写成物理惯例的变量名（x、t、V、y），而不是单位符号。这张表把变量名映射到它惯用的单位，供引擎解析 wrt 字段。放在数据里而非代码里，是为了让物理惯例可审阅、可扩充。注意：解析时本表优先于单位符号表——因为单字母变量与单位符号高度重名（s 既是秒又是路程，m 既是米又是质量，T 既是特斯拉又是温度），在 wrt 位置一律按变量语义解释。",
+  "variables": [
+    { "symbol": "x", "unit": "m", "zh": "位移/坐标", "note": "沿 x 方向的位置，单位米" },
+    { "symbol": "y", "unit": "m", "zh": "位移/坐标", "note": "沿 y 方向的位置，单位米" },
+    { "symbol": "z", "unit": "m", "zh": "位移/坐标", "note": "沿 z 方向的位置，单位米" },
+    { "symbol": "r", "unit": "m", "zh": "半径/距离", "note": "径向坐标，单位米" },
+    { "symbol": "l", "unit": "m", "zh": "长度", "note": "长度量，单位米" },
+    { "symbol": "d", "unit": "m", "zh": "距离/间距", "note": "间距，单位米" },
+    { "symbol": "h", "unit": "m", "zh": "高度", "note": "高度，单位米" },
+    { "symbol": "t", "unit": "s", "zh": "时间", "note": "时间坐标，单位秒" },
+    { "symbol": "V", "unit": "m^3", "zh": "体积", "note": "积分区域体积，单位立方米" },
+    { "symbol": "V_vol", "unit": "m^3", "zh": "体积", "note": "显式写法，避免与电压单位 V 冲突" },
+    { "symbol": "A", "unit": "m^2", "zh": "面积", "note": "积分区域面积，单位平方米" },
+    { "symbol": "A_area", "unit": "m^2", "zh": "面积", "note": "显式写法，避免与电流单位 A 冲突" },
+    { "symbol": "S", "unit": "m^2", "zh": "面积", "note": "面元" },
+    { "symbol": "theta", "unit": "rad", "zh": "角位移", "note": "角度坐标，单位弧度" },
+    { "symbol": "phi", "unit": "rad", "zh": "角坐标", "note": "方位角" },
+    { "symbol": "c", "unit": "mol/m^3", "zh": "浓度", "note": "物质的量浓度（菲克定律等）" },
+
+    { "symbol": "s", "unit": "s", "zh": "时间", "note": "在 wrt 位置表示时间变量。注意与长度单位 m 的写法无关——此处按变量语义解释" },
+    { "symbol": "m", "unit": "kg", "zh": "质量", "note": "质量变量。在 wrt 位置按质量解释，不作为长度单位" },
+    { "symbol": "T", "unit": "K", "zh": "温度", "note": "热力学温度。在 wrt 位置按温度解释，不作为特斯拉" },
+    { "symbol": "M", "unit": "kg", "zh": "质量", "note": "质量（大写写法）" },
+    { "symbol": "L", "unit": "m", "zh": "长度", "note": "长度（大写写法）" },
+    { "symbol": "q", "unit": "C", "zh": "电荷量", "note": "电荷，单位库仑" },
+    { "symbol": "Q", "unit": "C", "zh": "电荷量", "note": "热量/电荷，视上下文" },
+    { "symbol": "i", "unit": "A", "zh": "电流", "note": "电流强度，单位安培" }
+  ]
+}

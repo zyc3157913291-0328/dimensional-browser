@@ -1,0 +1,520 @@
+{
+  "kind": "units",
+  "note": "单位注册表。dim 为相对 SI 基本维度的量纲向量；factor 为相对 SI 基准的换算因子；offset 仅温标使用。词头不进此表，由 prefixable 标记后由前缀机制处理。",
+  "units": [
+    {
+      "id": "m",
+      "zh": "米",
+      "symbol": "m",
+      "aliases": [
+        "公尺",
+        "meter",
+        "metre"
+      ],
+      "dim": {
+        "L": 1
+      },
+      "factor": 1.0,
+      "prefixable": true,
+      "system": "si-base"
+    },
+    {
+      "id": "kg",
+      "zh": "千克",
+      "symbol": "kg",
+      "aliases": [
+        "公斤",
+        "kilogram"
+      ],
+      "dim": {
+        "M": 1
+      },
+      "factor": 1.0,
+      "prefixable": false,
+      "system": "si-base",
+      "note": "质量的基本单位本身含词头，故不再接受前缀。"
+    },
+    {
+      "id": "g",
+      "zh": "克",
+      "symbol": "g",
+      "aliases": [
+        "gram"
+      ],
+      "dim": {
+        "M": 1
+      },
+      "factor": 0.001,
+      "prefixable": true,
+      "system": "si-base"
+    },
+    {
+      "id": "s",
+      "zh": "秒",
+      "symbol": "s",
+      "aliases": [
+        "second"
+      ],
+      "dim": {
+        "T": 1
+      },
+      "factor": 1.0,
+      "prefixable": true,
+      "system": "si-base"
+    },
+    {
+      "id": "A",
+      "zh": "安培",
+      "symbol": "A",
+      "aliases": [
+        "安",
+        "ampere"
+      ],
+      "dim": {
+        "I": 1
+      },
+      "factor": 1.0,
+      "prefixable": true,
+      "system": "si-base"
+    },
+    {
+      "id": "K",
+      "zh": "开尔文",
+      "symbol": "K",
+      "aliases": [
+        "kelvin"
+      ],
+      "dim": {
+        "TH": 1
+      },
+      "factor": 1.0,
+      "prefixable": true,
+      "system": "si-base"
+    },
+    {
+      "id": "mol",
+      "zh": "摩尔",
+      "symbol": "mol",
+      "aliases": [
+        "mole"
+      ],
+      "dim": {
+        "N": 1
+      },
+      "factor": 1.0,
+      "prefixable": true,
+      "system": "si-base"
+    },
+    {
+      "id": "cd",
+      "zh": "坎德拉",
+      "symbol": "cd",
+      "aliases": [
+        "candela"
+      ],
+      "dim": {
+        "J": 1
+      },
+      "factor": 1.0,
+      "prefixable": true,
+      "system": "si-base"
+    },
+    {
+      "id": "rad",
+      "zh": "弧度",
+      "symbol": "rad",
+      "aliases": [
+        "radian"
+      ],
+      "dim": {},
+      "factor": 1.0,
+      "prefixable": true,
+      "system": "si-derived",
+      "note": "弧度无因次：它是纯数比（弧长/半径），不携带任何量纲。曾尝试用伪维度 RAD 让力矩与能量在量纲上分开，但 rad·rad 在向量空间里得 rad² 而非相消，与 W=M·θ 矛盾，故放弃。见 dim.py 模块说明。"
+    },
+    {
+      "id": "sr",
+      "zh": "球面度",
+      "symbol": "sr",
+      "aliases": [
+        "steradian"
+      ],
+      "dim": {},
+      "factor": 1.0,
+      "prefixable": true,
+      "system": "si-derived"
+    },
+    {
+      "id": "Hz",
+      "zh": "赫兹",
+      "symbol": "Hz",
+      "aliases": [
+        "hertz",
+        "赫"
+      ],
+      "dim": {
+        "T": -1
+      },
+      "factor": 1.0,
+      "prefixable": true,
+      "system": "si-derived"
+    },
+    {
+      "id": "N",
+      "zh": "牛",
+      "symbol": "N",
+      "aliases": [
+        "牛顿",
+        "newton"
+      ],
+      "dim": {
+        "M": 1,
+        "L": 1,
+        "T": -2
+      },
+      "factor": 1.0,
+      "prefixable": true,
+      "system": "si-derived"
+    },
+    {
+      "id": "Pa",
+      "zh": "帕",
+      "symbol": "Pa",
+      "aliases": [
+        "帕斯卡",
+        "pascal"
+      ],
+      "dim": {
+        "M": 1,
+        "L": -1,
+        "T": -2
+      },
+      "factor": 1.0,
+      "prefixable": true,
+      "system": "si-derived"
+    },
+    {
+      "id": "J",
+      "zh": "焦",
+      "symbol": "J",
+      "aliases": [
+        "焦耳",
+        "joule"
+      ],
+      "dim": {
+        "M": 1,
+        "L": 2,
+        "T": -2
+      },
+      "factor": 1.0,
+      "prefixable": true,
+      "system": "si-derived"
+    },
+    {
+      "id": "W",
+      "zh": "瓦",
+      "symbol": "W",
+      "aliases": [
+        "瓦特",
+        "watt"
+      ],
+      "dim": {
+        "M": 1,
+        "L": 2,
+        "T": -3
+      },
+      "factor": 1.0,
+      "prefixable": true,
+      "system": "si-derived"
+    },
+    {
+      "id": "C",
+      "zh": "库仑",
+      "symbol": "C",
+      "aliases": [
+        "库",
+        "coulomb"
+      ],
+      "dim": {
+        "I": 1,
+        "T": 1
+      },
+      "factor": 1.0,
+      "prefixable": true,
+      "system": "si-derived"
+    },
+    {
+      "id": "V",
+      "zh": "伏",
+      "symbol": "V",
+      "aliases": [
+        "伏特",
+        "volt"
+      ],
+      "dim": {
+        "M": 1,
+        "L": 2,
+        "T": -3,
+        "I": -1
+      },
+      "factor": 1.0,
+      "prefixable": true,
+      "system": "si-derived"
+    },
+    {
+      "id": "F",
+      "zh": "法",
+      "symbol": "F",
+      "aliases": [
+        "法拉",
+        "farad"
+      ],
+      "dim": {
+        "M": -1,
+        "L": -2,
+        "T": 4,
+        "I": 2
+      },
+      "factor": 1.0,
+      "prefixable": true,
+      "system": "si-derived"
+    },
+    {
+      "id": "Ohm",
+      "zh": "欧",
+      "symbol": "Ω",
+      "aliases": [
+        "欧姆",
+        "ohm"
+      ],
+      "dim": {
+        "M": 1,
+        "L": 2,
+        "T": -3,
+        "I": -2
+      },
+      "factor": 1.0,
+      "prefixable": true,
+      "system": "si-derived"
+    },
+    {
+      "id": "T",
+      "zh": "特斯拉",
+      "symbol": "T",
+      "aliases": [
+        "tesla",
+        "特"
+      ],
+      "dim": {
+        "M": 1,
+        "T": -2,
+        "I": -1
+      },
+      "factor": 1.0,
+      "prefixable": true,
+      "system": "si-derived"
+    },
+    {
+      "id": "H",
+      "zh": "亨",
+      "symbol": "H",
+      "aliases": [
+        "亨利",
+        "henry"
+      ],
+      "dim": {
+        "M": 1,
+        "L": 2,
+        "T": -2,
+        "I": -2
+      },
+      "factor": 1.0,
+      "prefixable": true,
+      "system": "si-derived"
+    },
+    {
+      "id": "Wb",
+      "zh": "韦伯",
+      "symbol": "Wb",
+      "aliases": [
+        "韦",
+        "weber"
+      ],
+      "dim": {
+        "M": 1,
+        "L": 2,
+        "T": -2,
+        "I": -1
+      },
+      "factor": 1.0,
+      "prefixable": true,
+      "system": "si-derived"
+    },
+    {
+      "id": "bar",
+      "zh": "巴",
+      "symbol": "bar",
+      "aliases": [],
+      "dim": {
+        "M": 1,
+        "L": -1,
+        "T": -2
+      },
+      "factor": 100000.0,
+      "prefixable": false,
+      "system": "accepted"
+    },
+    {
+      "id": "min",
+      "zh": "分",
+      "symbol": "min",
+      "aliases": [
+        "分钟"
+      ],
+      "dim": {
+        "T": 1
+      },
+      "factor": 60.0,
+      "prefixable": false,
+      "system": "accepted"
+    },
+    {
+      "id": "h",
+      "zh": "小时",
+      "symbol": "h",
+      "aliases": [
+        "时",
+        "hour"
+      ],
+      "dim": {
+        "T": 1
+      },
+      "factor": 3600.0,
+      "prefixable": false,
+      "system": "accepted"
+    },
+    {
+      "id": "lm",
+      "zh": "流明",
+      "symbol": "lm",
+      "aliases": [
+        "lumen"
+      ],
+      "dim": {
+        "J": 1
+      },
+      "factor": 1.0,
+      "prefixable": true,
+      "system": "si-derived",
+      "note": "光通量单位，lm = cd·sr。球面度无因次，所以流明与坎德拉量纲相同——这是光学里量纲分析的一个陷阱。"
+    },
+    {
+      "id": "lx",
+      "zh": "勒克斯",
+      "symbol": "lx",
+      "aliases": [
+        "lux"
+      ],
+      "dim": {
+        "J": 1,
+        "L": -2
+      },
+      "factor": 1.0,
+      "prefixable": true,
+      "system": "si-derived",
+      "note": "照度单位，lx = lm/m²。"
+    }
+  ],
+  "prefixes": [
+    {
+      "symbol": "Y",
+      "zh": "尧",
+      "factor": 1e+24
+    },
+    {
+      "symbol": "Z",
+      "zh": "泽",
+      "factor": 1e+21
+    },
+    {
+      "symbol": "E",
+      "zh": "艾",
+      "factor": 1e+18
+    },
+    {
+      "symbol": "P",
+      "zh": "拍",
+      "factor": 1000000000000000.0
+    },
+    {
+      "symbol": "T",
+      "zh": "太",
+      "factor": 1000000000000.0
+    },
+    {
+      "symbol": "G",
+      "zh": "吉",
+      "factor": 1000000000.0
+    },
+    {
+      "symbol": "M",
+      "zh": "兆",
+      "factor": 1000000.0
+    },
+    {
+      "symbol": "k",
+      "zh": "千",
+      "factor": 1000.0
+    },
+    {
+      "symbol": "h",
+      "zh": "百",
+      "factor": 100.0
+    },
+    {
+      "symbol": "da",
+      "zh": "十",
+      "factor": 10.0
+    },
+    {
+      "symbol": "d",
+      "zh": "分",
+      "factor": 0.1
+    },
+    {
+      "symbol": "c",
+      "zh": "厘",
+      "factor": 0.01
+    },
+    {
+      "symbol": "m",
+      "zh": "毫",
+      "factor": 0.001
+    },
+    {
+      "symbol": "u",
+      "zh": "微",
+      "factor": 1e-06
+    },
+    {
+      "symbol": "n",
+      "zh": "纳",
+      "factor": 1e-09
+    },
+    {
+      "symbol": "p",
+      "zh": "皮",
+      "factor": 1e-12
+    },
+    {
+      "symbol": "f",
+      "zh": "飞",
+      "factor": 1e-15
+    },
+    {
+      "symbol": "a",
+      "zh": "阿",
+      "factor": 1e-18
+    }
+  ]
+}
